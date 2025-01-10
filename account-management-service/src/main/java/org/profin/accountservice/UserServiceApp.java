@@ -1,4 +1,4 @@
-package org.accountservice;
+package org.profin.accountservice;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

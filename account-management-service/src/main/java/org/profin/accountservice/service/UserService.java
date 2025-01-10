@@ -1,8 +1,12 @@
-package org.accountservice.service;
+package org.profin.accountservice.service;
 
-import org.accountservice.repository.UserRepository;
+import org.profin.accountservice.model.User;
+import org.profin.accountservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class UserService {

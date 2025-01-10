@@ -1,4 +1,4 @@
-package org.transactionservice;
+package org.profin.transactionservice;
 
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package org.accountservice.model;
+package org.profin.accountservice.model;
 
 
 import jakarta.persistence.*;
