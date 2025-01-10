@@ -1,6 +1,6 @@
-package org.profin.repository;
+package org.accountservice.repository;
 
-import org.profin.model.User;
+import org.accountservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

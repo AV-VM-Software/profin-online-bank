@@ -1,4 +1,4 @@
-package org.profin.dto;
+package org.accountservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

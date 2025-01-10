@@ -1,6 +1,6 @@
-package org.profin.service;
+package org.accountservice.service;
 
-import org.profin.repository.UserRepository;
+import org.accountservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

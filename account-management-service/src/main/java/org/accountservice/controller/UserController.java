@@ -1,6 +1,6 @@
-package org.profin.controller;
+package org.accountservice.controller;
 
-import org.profin.service.UserService;
+import org.accountservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

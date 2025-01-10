@@ -39,3 +39,18 @@ origin  git@github.com:AV-VM-Software/profin-online-bank.git (push)
 origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (push)
 ```
 
+Eureka Server НЕ обязателен при использовании Kafka
+Основные причины 1:
+
+Kafka сам по себе обеспечивает балансировку нагрузки через партиции
+Сервисы взаимодействуют через топики, а не через прямые HTTP вызовы
+Kafka имеет собственный механизм обнаружения брокеров и потребителей
+Когда нужен Eureka Server
+При использовании REST взаимодействий между сервисами 1:
+Для service discovery
+Для load balancing через Ribbon
+При использовании API Gateway (например, Zuul)
+При гибридной архитектуре:
+Часть сервисов общается через HTTP
+Часть через Kafka
+
