@@ -1,3 +1,7 @@
+#9092 - внешний порт для клиентов
+#29092 - внутренний порт для Docker network
+#8081 - порт Schema Registry
+#9093 - порт контроллера KRaft
 services:
   broker:
     image: apache/kafka:latest
