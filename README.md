@@ -20,3 +20,22 @@ transactions.notifications
 transactions.pending
 transactions.processed
 ```
+
+
+   Dev Notes
+===========================
+## How to configure double push 2 orgins
+```
+git remote set-url --add --push origin git@github.com:AV-VM-Software/profin-online-bank.git
+git remote set-url --add --push origin git@gitlab.fel.cvut.cz:manilvit/profin.git
+```
+```
+git remote -v
+```
+Should return:
+```
+> origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (fetch)
+origin  git@github.com:AV-VM-Software/profin-online-bank.git (push)
+origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (push)
+```
+
