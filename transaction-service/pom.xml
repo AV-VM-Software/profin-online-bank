@@ -14,7 +14,6 @@
 <!--    maybe war later is beter for dockerization? -->
     <packaging>jar</packaging>
 
-    <name>TransactionService</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

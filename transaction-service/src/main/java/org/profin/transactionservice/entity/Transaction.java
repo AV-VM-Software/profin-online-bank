@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -23,16 +24,18 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;              // Уникальный идентификатор транзакции
+
     private Long userId;          // ID of sender
     private Long recipientId;     // ID of recipient
+    private String uuidSenderAccount; // UUID of sender account
+    private String uuidRecipientAccount; // UUID of recipient account
 
+    private TransactionType transactionType; // Withdrawal, Deposit, Transfer
+    private PaymentStatus paymentStatus; // Pending - on create, Processsing- putted on kafka topic, Completed, Failed
 
     private BigDecimal amount;    // Сумма транзакции (ex, 100.00)
-    private String type;          // Тип транзакции (например, "DEBIT", "CREDIT")?
-    private String currency;      // Валюта (например, "USD", "EUR", "CZK")
+    private Currency currency;      // Валюта (например, "USD", "EUR", "CZK")
 
-    private boolean isValid;      // Флаг валидации транзакции ???
-    private Date createdAt;
-
+    private LocalDateTime createdAt; //beter than Date or might be bug
 
 }
