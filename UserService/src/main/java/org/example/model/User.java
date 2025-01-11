@@ -2,12 +2,13 @@ package org.example.model;
 
 
 import jakarta.persistence.*;
-import jdk.jfr.DataAmount;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_user")
@@ -26,21 +27,28 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BankAccount> bankAccounts;
+
+
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Date createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private Date updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
     }
 
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = new Date();
     }
 
 }

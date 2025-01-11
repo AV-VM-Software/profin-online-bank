@@ -1,2 +1,4 @@
-package org.example.repository;public class TransactionRepository {
+package org.example.repository;
+
+public class TransactionRepository {
 }

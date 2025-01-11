@@ -1,2 +1,4 @@
-package org.example.controller;public class TransactionController {
+package org.example.controller;
+
+public class TransactionController {
 }
