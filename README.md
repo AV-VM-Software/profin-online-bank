@@ -43,14 +43,26 @@ docker start broker
 docker start schema-registry
 ```
 
-## How to configure double push 2 orgins
+## look for messages in topic
+
+
+```docker
+# Просмотр последних N сообщений
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic transactions.pending \
+    --from-beginning
+
 ```
+
+
+## How to configure double push 2 orgins
+```bash
 git remote set-url --add --push origin git@github.com:AV-VM-Software/profin-online-bank.git
 git remote set-url --add --push origin git@gitlab.fel.cvut.cz:manilvit/profin.git
 ```
 ```
 git remote -v
-```
+```bash
 Should return:
 ```
 > origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (fetch)
