@@ -21,9 +21,28 @@ transactions.pending
 transactions.processed
 ```
 
+ Used Patterns
+===========================
+- Saga orchestration
+- Reactive programming
+- Event driven architecture
+- Microservice architecture
+- Factory method
+- Singleton 
+- Observer Listener Publisher?
+- Functional programming
+- Builder
+- Strategy
+
 
    Dev Notes
 ===========================
+Не создавай новых
+```
+docker start broker 
+docker start schema-registry
+```
+
 ## How to configure double push 2 orgins
 ```
 git remote set-url --add --push origin git@github.com:AV-VM-Software/profin-online-bank.git
