@@ -14,9 +14,5 @@ public class UserServiceApp
 
 
 
-//    тут надо комманд лайн раннер
-
-
-
 
 }
