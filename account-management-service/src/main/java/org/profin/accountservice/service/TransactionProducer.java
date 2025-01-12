@@ -22,15 +22,5 @@ public class TransactionProducer {
         kafkaTemplate.send("transactions.processed", transaction);
         log.info("Producer sent message");
     }
-//    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
-//
-//    @Autowired
-//    public TransactionProducer(KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
-//        this.kafkaTemplate = kafkaTemplate;
-//    }
-//
-//    public void sendTransaction(TransactionDTO transaction) {
-//        kafkaTemplate.send("transactions", transaction.getId().toString(), transaction);
-//        log.info("Producer sent message");
-//    }
+
 }

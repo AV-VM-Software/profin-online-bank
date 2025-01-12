@@ -1,15 +1,37 @@
 server:
   port: 8089
 
+#spring:
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    consumer:
+#      group-id: account-management-service-group-new
+#      auto-offset-reset: earliest
+#      enable-auto-commit: false
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+#        spring.json.trusted.packages: "*"
+#        spring.json.use.type.headers: false
+#        spring.json.value.default.type: org.profin.accountservice.dto.request.KafkaTransaction
+#        spring.json.type.mapping: Transaction:org.profin.accountservice.dto.request.KafkaTransaction
+#        isolation.level: read_committed
 
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
     consumer:
       group-id: account-management-service-group
-      auto-offset-reset: earliest
-
-
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: org.profin.accountservice.dto.request.KafkaTransaction
+        spring.json.type.mapping: Transaction:org.profin.accountservice.dto.request.KafkaTransaction
+logging:
+  level:
+    org.apache.kafka: DEBUG
+    org.springframework.kafka: DEBUG
+    root: INFO
 
   datasource:
     h2:

@@ -1,8 +1,8 @@
 package org.profin.accountservice.dto.request;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import lombok.*;
 import org.profin.accountservice.dto.PaymentStatus;
 import org.profin.accountservice.dto.TransactionType;
 
@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Data
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class KafkaTransaction {
     private Long id;
 
@@ -28,6 +30,6 @@ public class KafkaTransaction {
     private PaymentStatus paymentStatus; // Pending - on create, Processsing- putted on kafka topic, Completed, Failed
 
     private BigDecimal amount;    // Сумма транзакции (ex, 100.00)
-
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime createdAt; //beter than Date or might be bug
 }
