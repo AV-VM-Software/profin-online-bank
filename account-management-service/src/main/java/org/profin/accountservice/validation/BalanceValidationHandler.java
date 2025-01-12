@@ -1,12 +1,10 @@
 package org.profin.accountservice.validation;
 
 
-import org.profin.accountservice.dto.request.KafkaTransaction;
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.model.BankAccount;
 import org.profin.accountservice.repository.BankAccountRepository;
-import org.profin.accountservice.repository.UserRepository;
-import org.profin.accountservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,20 +23,20 @@ public class BalanceValidationHandler extends ValidationHandler {
     }
 
     @Override
-    public void validate(KafkaTransaction transaction) throws ValidationException {
+    public void validate(TransactionDTO transactionDTO) throws ValidationException {
         // Получаем BankAccount через репозиторий, который возвращает Optional
-        Optional<BankAccount> optionalAccount = bankAccountRepository.findById(transaction.getIdSenderAccount());
+        Optional<BankAccount> optionalAccount = bankAccountRepository.findById(transactionDTO.getIdSenderAccount());
 
         // Проверка, что банковский счет найден
         BankAccount account = optionalAccount.orElseThrow(() ->
-                new ValidationException("Bank account not found for user " + transaction.getUserId()));
+                new ValidationException("Bank account not found for user " + transactionDTO.getUserId()));
 
         // Проверка достаточности баланса
-        if (account.getBalance().compareTo(transaction.getAmount()) < 0) {
+        if (account.getBalance().compareTo(transactionDTO.getAmount()) < 0) {
             throw new ValidationException("Insufficient balance");
         }
 
         // Передаем дальше по цепочке
-        super.validate(transaction);
+        super.validate(transactionDTO);
     }
 }

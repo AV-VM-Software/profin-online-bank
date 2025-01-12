@@ -1,6 +1,6 @@
 package org.profin.accountservice.service;
 
-import org.profin.accountservice.dto.request.KafkaTransaction;
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.repository.BankAccountRepository;
 import org.profin.accountservice.repository.UserRepository;
@@ -28,13 +28,13 @@ public class TransactionService {
         balanceHandler.setNextHandler(amountHandler);
     }
 
-    public void processTransaction(KafkaTransaction transaction) throws ValidationException {
+    public void processTransaction(TransactionDTO transactionDTO) throws ValidationException {
         // Запуск цепочки валидации
-        validationChain.validate(transaction);
+        validationChain.validate(transactionDTO);
 
         // Логика обработки транзакции после успешной валидации
         // Например, сохранение транзакции в базе данных
-        System.out.println("Transaction validated and processed: " + transaction);
+        System.out.println("Transaction validated and processed: " + transactionDTO);
     }
 
 

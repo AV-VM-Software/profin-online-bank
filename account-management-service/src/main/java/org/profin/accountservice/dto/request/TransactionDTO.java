@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class KafkaTransaction {
+public class TransactionDTO {
     private Long id;
 
     private Long userId;
@@ -30,6 +30,5 @@ public class KafkaTransaction {
     private PaymentStatus paymentStatus; // Pending - on create, Processsing- putted on kafka topic, Completed, Failed
 
     private BigDecimal amount;    // Сумма транзакции (ex, 100.00)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime createdAt; //beter than Date or might be bug
+
 }

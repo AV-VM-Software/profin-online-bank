@@ -1,15 +1,10 @@
 package org.profin.accountservice.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.profin.accountservice.dto.request.KafkaTransaction;
-import org.profin.accountservice.exception.ValidationException;
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 
@@ -18,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class TransactionListener {
 
     private final TransactionService transactionService;
-    private final KafkaTemplate<String, KafkaTransaction> kafkaTemplate;
+    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
 
     @Autowired
-    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, KafkaTransaction> kafkaTemplate) {
+    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
         this.transactionService = transactionService;
         this.kafkaTemplate = kafkaTemplate;
     }

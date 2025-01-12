@@ -1,7 +1,7 @@
 package org.profin.accountservice.validation;
 
 
-import org.profin.accountservice.dto.request.KafkaTransaction;
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 
 public abstract class ValidationHandler implements TransactionValidator {
@@ -12,9 +12,9 @@ public abstract class ValidationHandler implements TransactionValidator {
     }
 
     @Override
-    public void validate(KafkaTransaction transaction) throws ValidationException {
+    public void validate(TransactionDTO transactionDTO) throws ValidationException {
         if (nextHandler != null) {
-            nextHandler.validate(transaction); // Передача дальше по цепочке
+            nextHandler.validate(transactionDTO); // Передача дальше по цепочке
         }
     }
 }
