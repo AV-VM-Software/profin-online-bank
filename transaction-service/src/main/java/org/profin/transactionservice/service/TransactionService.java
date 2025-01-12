@@ -7,6 +7,7 @@ import org.profin.transactionservice.dto.TransactionDTO;
 import org.profin.transactionservice.entity.PaymentStatus;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.entity.TransactionType;
+import org.profin.transactionservice.mapper.TransactionMapper;
 import org.profin.transactionservice.repository.TransactionRepository;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,7 +26,7 @@ public class TransactionService {
 
 
     private final TransactionRepository transactionRepository;
-
+    private final TransactionMapper transactionMapper;
     private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
 
     //todo use dto or map from dto on controller level
@@ -105,7 +106,7 @@ public class TransactionService {
         updateTransaction(transaction)
                 .flatMap(updatedTransaction -> {
                     // Преобразуем CompletableFuture в Mono
-                    return Mono.fromFuture(sendTransactionToKafka(updatedTransaction, "transactions.notifications"));
+                    return Mono.fromFuture(sendTransactionToKafka(transactionMapper.mapToTransactionDTO(updatedTransaction), "transactions.notifications"));
                 })
                 .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
                         error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
