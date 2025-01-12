@@ -1,4 +1,4 @@
-package org.profin.transactionservice;
+package org.profin.transactionservice.dto;
 
 import lombok.*;
 import org.profin.transactionservice.entity.PaymentStatus;

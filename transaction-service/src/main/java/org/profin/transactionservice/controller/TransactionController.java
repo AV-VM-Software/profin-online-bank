@@ -2,8 +2,8 @@ package org.profin.transactionservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.profin.transactionservice.dto.request.TransactionRequest;
-import org.profin.transactionservice.dto.response.TransactionResponse;
+
+import org.profin.transactionservice.dto.TransactionDTO;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.repository.TransactionRepository;
 import org.profin.transactionservice.service.TransactionService;
@@ -37,7 +37,7 @@ public class TransactionController {
 //        return null;
 //    }
     @PostMapping("/createNewTransaction")
-    public Mono<TransactionResponse> createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+    public Mono<TransactionDTO> createNewTransaction(@Valid @RequestBody TransactionDTO transactionRequest) {
         return transactionService.createNewTransaction(transactionService.buildFromRequest(transactionRequest))
                 .doOnSuccess(savedTransaction -> {
                     kafkaTemplate.send("transactions.pending", savedTransaction);
