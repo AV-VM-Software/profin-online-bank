@@ -12,10 +12,15 @@ import java.util.Date;
 @AllArgsConstructor
 public class TransactionDTO {
     private Long id;              // Уникальный идентификатор транзакции
-    private Long userId;          // ID пользователя, связанного с транзакцией
-    private BigDecimal amount;    // Сумма транзакции
-    private String type;          // Тип транзакции (например, "DEBIT", "CREDIT")
-    private String currency;      // Валюта (например, "USD", "EUR")
-    private boolean isValid;      // Флаг валидации транзакции
-    private Date createdAt;       // Время создания транзакции
+
+    private Long userId;          // ID of sender
+    private Long recipientId;     // ID of recipient null if transaction is not transfer
+
+    private Long idSenderAccount; // UUID of sender account
+    private Long idRecipientAccount; // UUID of recipient account null if transaction is not transfer
+
+
+    private BigDecimal amount;    // Сумма транзакции (ex, 100.00)
+
+//    private LocalDateTime createdAt; //beter than Date or might be bug
 }
