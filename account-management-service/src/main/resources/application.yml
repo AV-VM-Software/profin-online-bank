@@ -1,19 +1,13 @@
 server:
   port: 8089
 
+
 spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: user-service-group
+      group-id: account-management-service-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.listener.MessageListenerContainer#jsonDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
 
 
 

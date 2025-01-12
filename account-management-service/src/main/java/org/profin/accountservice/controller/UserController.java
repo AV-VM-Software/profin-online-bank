@@ -2,9 +2,9 @@ package org.profin.accountservice.controller;
 
 
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.dto.UserDTO;
 import org.profin.accountservice.dto.UserMapper;
+import org.profin.accountservice.dto.request.KafkaTransaction;
 import org.profin.accountservice.model.User;
 import org.profin.accountservice.service.TransactionProducer;
 import org.profin.accountservice.service.UserService;
@@ -86,7 +86,7 @@ public class UserController {
 
 
     @PostMapping("/postMessage")
-    public ResponseEntity<String> sendTransaction(@RequestBody TransactionDTO transaction) {
+    public ResponseEntity<String> sendTransaction(@RequestBody KafkaTransaction transaction) {
         try {
             // Отправляем транзакцию в Kafka через сервис
             transactionProducer.sendTransaction(transaction);

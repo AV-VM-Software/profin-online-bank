@@ -1,6 +1,7 @@
 package org.profin.accountservice.validation;
 
-import org.profin.accountservice.dto.TransactionDTO;
+
+import org.profin.accountservice.dto.request.KafkaTransaction;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.repository.UserRepository;
 import org.profin.accountservice.service.UserService;
@@ -20,7 +21,7 @@ public class UserExistenceValidationHandler extends ValidationHandler {
     }
 
     @Override
-    public void validate(TransactionDTO transaction) throws ValidationException {
+    public void validate(KafkaTransaction transaction) throws ValidationException {
         // Проверка существования пользователя с использованием репозитория
         if (!userRepository.existsById(transaction.getUserId())) {
             throw new ValidationException("User not found");

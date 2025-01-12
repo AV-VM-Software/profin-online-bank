@@ -1,7 +1,7 @@
 package org.profin.accountservice.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.profin.accountservice.dto.TransactionDTO;
+import org.profin.accountservice.dto.request.KafkaTransaction;
 import org.profin.accountservice.exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,16 +14,31 @@ import org.springframework.stereotype.Service;
 public class TransactionListener {
 
     private final TransactionService transactionService;
-    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaTransaction> kafkaTemplate;
 
     @Autowired
-    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
+    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, KafkaTransaction> kafkaTemplate) {
         this.transactionService = transactionService;
         this.kafkaTemplate = kafkaTemplate;
     }
 
+
+    @KafkaListener(topics = "transactions.pending", groupId = "transaction-service-group")
+    public void handlePendingTransaction(KafkaTransaction request) {
+        log.info("Received pending transaction: {}", request);
+
+
+        // todo map from dto
+//        transactionService.processTransaction(transaction);
+
+
+//        kafkaTemplate.send("transactions.processed", transaction);
+    }
+
+
+
     @KafkaListener(topics = "transactions", groupId = "account-service")
-    public void handleTransaction(TransactionDTO transaction) {
+    public void handleTransaction(KafkaTransaction transaction) {
         try {
             // Валидация пользователя
             transactionService.processTransaction(transaction);

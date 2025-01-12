@@ -1,6 +1,7 @@
 package org.profin.accountservice.validation;
 
-import org.profin.accountservice.dto.TransactionDTO;
+
+import org.profin.accountservice.dto.request.KafkaTransaction;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.model.BankAccount;
 import org.profin.accountservice.repository.BankAccountRepository;
@@ -24,7 +25,7 @@ public class BalanceValidationHandler extends ValidationHandler {
     }
 
     @Override
-    public void validate(TransactionDTO transaction) throws ValidationException {
+    public void validate(KafkaTransaction transaction) throws ValidationException {
         // Получаем BankAccount через репозиторий, который возвращает Optional
         Optional<BankAccount> optionalAccount = bankAccountRepository.findById(transaction.getIdSenderAccount());
 
