@@ -8,27 +8,20 @@ import org.profin.transactionservice.repository.TransactionRepository;
 import org.profin.transactionservice.service.TransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@RestController("/api/transactions")
+@RestController
+@RequestMapping("/api/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
 
     private final KafkaTemplate<String, Transaction> kafkaTemplate;
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
-//
-//    @PutMapping("/createTestTransaction")
-//    public Mono<ResponseEntity<Transaction>> createTestTransaction() {
-//        return transactionService.createNewTransaction(transactionService.buildTransefTransaction())
-//                .map(ResponseEntity::ok)
-//                .defaultIfEmpty(ResponseEntity.notFound().build());
-//    }
+
+
     @PostMapping("/createNewTransaction")
     public void createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
         try {
@@ -59,18 +52,4 @@ public class TransactionController {
     public Mono<Transaction> saveTransaction() {
         return transactionService.createNewTransaction(transactionService.buildTransefTransaction());
     }
-//    @PostConstruct
-//    public void checkKafkaConnection() {
-//        try {
-//
-//
-//            transactionService.saveTransaction(transactionService.buildTransefTransaction()).doOnSuccess(
-//
-//                    savedTransacation -> kafkaTemplate.send("transactions.pending", savedTransacation)
-//            ).subscribe();
-//            log.info("Successfully connected to Kafka");
-//        } catch (Exception e) {
-//            log.error("Failed to connect to Kafka: {}", e.getMessage());
-//        }
-//    }
 }
