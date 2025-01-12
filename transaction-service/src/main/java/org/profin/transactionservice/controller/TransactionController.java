@@ -32,7 +32,7 @@ public class TransactionController {
     @PostMapping("/createNewTransaction")
     public void createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
         try {
-            transactionService.createNewTransaction(transactionService.buildTransefTransaction()).doOnSuccess(
+            transactionService.createNewTransaction(transactionService.buildFromRequest(transactionRequest)).doOnSuccess(
                     savedTransacation -> kafkaTemplate.send("transactions.pending", savedTransacation)
             ).subscribe();
             log.info("Successfully connected to Kafka");

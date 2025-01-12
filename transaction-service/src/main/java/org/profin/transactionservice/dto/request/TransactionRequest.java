@@ -16,6 +16,7 @@ import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
 public record TransactionRequest(
         @NotNull(message = "User ID cannot be null")
         Long userId,

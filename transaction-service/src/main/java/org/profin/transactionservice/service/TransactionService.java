@@ -3,6 +3,7 @@ package org.profin.transactionservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.profin.transactionservice.dto.request.TransactionRequest;
 import org.profin.transactionservice.entity.PaymentStatus;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.entity.TransactionType;
@@ -87,6 +88,18 @@ public class TransactionService {
                 .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
                         error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
     }
+
+    public Transaction buildFromRequest(TransactionRequest transactionRequest) {
+        return new Transaction().builder().userId(transactionRequest.userId()).
+        recipientId(transactionRequest.recipientId()).
+        amount(transactionRequest.amount()).
+        idSenderAccount(transactionRequest.idSenderAccount()).
+        idRecipientAccount(transactionRequest.idRecipientAccount()).
+        transactionType(transactionRequest.transactionType()).
+        paymentStatus(PaymentStatus.PENDING).
+        createdAt(LocalDateTime.now()).
+                build();
+    }
     //dev mode
     public Transaction buildTransefTransaction() {
         return new Transaction().builder().userId(1L).
@@ -100,4 +113,6 @@ public class TransactionService {
                 build();
 
     }
+
+
 }
