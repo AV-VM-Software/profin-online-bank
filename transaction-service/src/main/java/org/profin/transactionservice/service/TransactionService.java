@@ -4,6 +4,7 @@ package org.profin.transactionservice.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.profin.transactionservice.dto.request.TransactionRequest;
+import org.profin.transactionservice.dto.response.TransactionResponse;
 import org.profin.transactionservice.entity.PaymentStatus;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.entity.TransactionType;
@@ -115,4 +116,9 @@ public class TransactionService {
     }
 
 
+    public TransactionResponse buildResponse(Transaction transaction) {
+        return new TransactionResponse(transaction.getId(), transaction.getUserId(), transaction.getRecipientId(),
+                transaction.getIdSenderAccount(), transaction.getIdRecipientAccount(), transaction.getTransactionType(),
+                transaction.getPaymentStatus(), transaction.getAmount(), transaction.getCreatedAt());
+    }
 }

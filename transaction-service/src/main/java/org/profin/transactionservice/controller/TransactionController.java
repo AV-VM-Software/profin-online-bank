@@ -3,6 +3,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.profin.transactionservice.dto.request.TransactionRequest;
+import org.profin.transactionservice.dto.response.TransactionResponse;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.repository.TransactionRepository;
 import org.profin.transactionservice.service.TransactionService;
@@ -22,16 +23,38 @@ public class TransactionController {
     private final TransactionRepository transactionRepository;
 
 
+//    @PostMapping("/createNewTransaction")
+//    public Mono<TransactionResponse> createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+//        try {
+//            transactionService.createNewTransaction(transactionService.buildFromRequest(transactionRequest)).doOnSuccess(
+//                    savedTransacation ->
+//                        kafkaTemplate.send("transactions.pending", savedTransacation)
+//            ).subscribe();
+//            log.info("Successfully connected to Kafka");
+//        } catch (Exception e) {
+//            log.error("Failed to connect to Kafka: {}", e.getMessage());
+//        }
+//        return null;
+//    }
     @PostMapping("/createNewTransaction")
-    public void createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
-        try {
-            transactionService.createNewTransaction(transactionService.buildFromRequest(transactionRequest)).doOnSuccess(
-                    savedTransacation -> kafkaTemplate.send("transactions.pending", savedTransacation)
-            ).subscribe();
-            log.info("Successfully connected to Kafka");
-        } catch (Exception e) {
-            log.error("Failed to connect to Kafka: {}", e.getMessage());
-        }
+    public Mono<TransactionResponse> createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+        return transactionService.createNewTransaction(transactionService.buildFromRequest(transactionRequest))
+                .doOnSuccess(savedTransaction -> {
+                    kafkaTemplate.send("transactions.pending", savedTransaction);
+                    log.info("Successfully connected to Kafka");
+                })
+                .map(savedTransaction -> new TransactionResponse(savedTransaction.getId(),
+                        savedTransaction.getUserId(),
+                        savedTransaction.getRecipientId(),
+                        savedTransaction.getIdSenderAccount(),
+                        savedTransaction.getIdRecipientAccount(),
+                        savedTransaction.getTransactionType(),
+                        savedTransaction.getPaymentStatus(),
+                        savedTransaction.getAmount(),
+                        savedTransaction.getCreatedAt())).doOnError(throwable -> {
+
+                    log.error("Failed to connect to Kafka: {}", throwable.getMessage());
+                });
     }
 
 
