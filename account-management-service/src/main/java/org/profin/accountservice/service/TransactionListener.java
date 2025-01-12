@@ -20,59 +20,22 @@ public class TransactionListener {
         this.transactionService = transactionService;
         this.kafkaTemplate = kafkaTemplate;
     }
-//    @KafkaListener(topics = "transactions.pending")
-//    public void handlePendingTransaction(
-//            @Payload KafkaTransaction transaction,
-//            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-//            @Header(KafkaHeaders.OFFSET) long offset
-//    ) {
-//        log.info("Received message: partition={}, offset={}, transaction={}",
-//                partition, offset, transaction);
-//
-//        // Ваша логика обработки
-//    }
-//@KafkaListener(topics = "transactions.pending")
-//public void handlePendingTransaction(ConsumerRecord<String, KafkaTransaction> record) {
-//    try {
-//        log.info("Received raw record: {}", record);
-//        KafkaTransaction transaction = record.value();
-//        log.info("Deserialized transaction: {}", transaction);
-//        transactionService.processTransaction(transaction);
-//    } catch (Exception e) {
-//        log.error("Error processing transaction", e);
-//    }
-////}
-//    @KafkaListener(topics = "transactions.pending")
-//    public void handlePendingTransaction(ConsumerRecord<String, String> record) {
-//        log.info("Received raw message - Topic: {}, Partition: {}, Offset: {}, Key: {}, Value: {}",
-//                record.topic(),
-//                record.partition(),
-//                record.offset(),
-//                record.key(),
-//                record.value()
-//        );
-//    }
+
+
+    //dev dev test
+//     !!!!! Received message:
+//     {"id":2,"userId":1,"recipientId":2,"idSenderAccount":1,"idRecipientAccount":2,"transactionType":"TRANSFER","paymentStatus":"PENDING","amount":100.0}
     @KafkaListener(topics = "transactions.pending", groupId = "account-management-service-group")
     public void handlePendingTransaction(String message) {
         log.info("!!!!! Received message: {}", message);
     }
-
-//    @KafkaListener(
-//            topics = "transactions.pending",
-//            groupId = "${spring.kafka.consumer.group-id}"
-//    )
-//    public void handlePendingTransaction(KafkaTransaction request) {
-//        log.info("Received pending transaction: {}", request);
-//
-//
-//        // todo map from dto
-////        transactionService.processTransaction(transaction);
-//
-//
-////        kafkaTemplate.send("transactions.processed", transaction);
-//    }
-//
-
+    //этот не совсем работает
+//    Received message:
+//    {"id":2,"userId":null,"recipientId":null,"idSenderAccount":1,"idRecipientAccount":2,"transactionType":"TRANSFER","paymentStatus":"PENDING","amount":100.0}
+    @KafkaListener(topics = "transactions.pending", groupId = "account-management-service-group")
+    public void handlePendingTransaction(TransactionDTO transactionDTO) {
+        log.info("!!!!! Received message: {}", transactionDTO.toString());
+    }
 
 //    @KafkaListener(topics = "transactions", groupId = "account-service")
 //    public void handleTransaction(KafkaTransaction transaction) {
