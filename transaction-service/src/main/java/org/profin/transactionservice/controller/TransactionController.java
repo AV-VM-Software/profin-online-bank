@@ -1,6 +1,8 @@
 package org.profin.transactionservice.controller;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.profin.transactionservice.dto.request.TransactionRequest;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.repository.TransactionRepository;
 import org.profin.transactionservice.service.TransactionService;
@@ -8,24 +10,40 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @Slf4j
-@RestController
+@RestController("/api/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
 
     private final KafkaTemplate<String, Transaction> kafkaTemplate;
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
-
-    @PutMapping("/createTestTransaction")
-    public Mono<ResponseEntity<Transaction>> createTestTransaction() {
-        return transactionService.createNewTransaction(transactionService.buildTransefTransaction())
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+//
+//    @PutMapping("/createTestTransaction")
+//    public Mono<ResponseEntity<Transaction>> createTestTransaction() {
+//        return transactionService.createNewTransaction(transactionService.buildTransefTransaction())
+//                .map(ResponseEntity::ok)
+//                .defaultIfEmpty(ResponseEntity.notFound().build());
+//    }
+    @PostMapping("/createNewTransaction")
+    public void createNewTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+        try {
+            transactionService.createNewTransaction(transactionService.buildTransefTransaction()).doOnSuccess(
+                    savedTransacation -> kafkaTemplate.send("transactions.pending", savedTransacation)
+            ).subscribe();
+            log.info("Successfully connected to Kafka");
+        } catch (Exception e) {
+            log.error("Failed to connect to Kafka: {}", e.getMessage());
+        }
     }
+
+
+
+
     @PostMapping("/checkKafkaConnection")
     public void checkKafkaConnection() {
         try {
