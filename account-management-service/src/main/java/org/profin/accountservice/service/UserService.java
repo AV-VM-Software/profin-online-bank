@@ -43,7 +43,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         existingUser.setEmail(user.getEmail());
-        existingUser.setUpdatedAt(new Date());
+        existingUser.setPassword(user.getPassword());
 
         try {
             return userRepository.save(existingUser);
@@ -88,9 +88,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Bank account not found with id: " + accountId));
     }
 
-    public void validateTransaction(TransactionDTO transaction) throws ValidationException {
-        transactionService.processTransaction(transaction);
-    }
+
 
 
 }
