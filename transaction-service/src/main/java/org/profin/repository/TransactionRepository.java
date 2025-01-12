@@ -12,12 +12,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface TransactionRepository extends ReactiveCrudRepository<Transaction,Long> {
 
-    @Modifying
-    @Transactional
-    @Query("INSERT INTO transactions (user_id, recipient_id, id_sender_account, id_recipient_account, transaction_type, payment_status, amount, created_at) " +
-            "VALUES (:#{#transaction.userId}, :#{#transaction.recipientId}, :#{#transaction.idSenderAccount}, :#{#transaction.idRecipientAccount}, " +
-            ":#{#transaction.transactionType}, :#{#transaction.paymentStatus}, :#{#transaction.amount}, :#{#transaction.createdAt}) " +
-            "RETURNING *")
-    Mono<Transaction> saveTransaction(Transaction transaction);
+
 
 }
