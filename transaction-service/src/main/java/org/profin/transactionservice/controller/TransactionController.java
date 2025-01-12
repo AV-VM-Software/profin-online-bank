@@ -1,5 +1,4 @@
 package org.profin.transactionservice.controller;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.profin.transactionservice.entity.Transaction;
@@ -23,14 +22,14 @@ public class TransactionController {
 
     @PutMapping("/createTestTransaction")
     public Mono<ResponseEntity<Transaction>> createTestTransaction() {
-        return transactionService.saveTransaction(transactionService.buildTransefTransaction())
+        return transactionService.createNewTransaction(transactionService.buildTransefTransaction())
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
     @PostMapping("/checkKafkaConnection")
     public void checkKafkaConnection() {
         try {
-            transactionService.saveTransaction(transactionService.buildTransefTransaction()).doOnSuccess(
+            transactionService.createNewTransaction(transactionService.buildTransefTransaction()).doOnSuccess(
                     savedTransacation -> kafkaTemplate.send("transactions.pending", savedTransacation)
             ).subscribe();
             log.info("Successfully connected to Kafka");
@@ -40,7 +39,7 @@ public class TransactionController {
     }
     @PostMapping("/saveTransaction")
     public Mono<Transaction> saveTransaction() {
-        return transactionService.saveTransaction(transactionService.buildTransefTransaction());
+        return transactionService.createNewTransaction(transactionService.buildTransefTransaction());
     }
 //    @PostConstruct
 //    public void checkKafkaConnection() {

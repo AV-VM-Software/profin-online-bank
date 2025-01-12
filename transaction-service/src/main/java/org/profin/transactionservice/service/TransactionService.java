@@ -7,6 +7,7 @@ import org.profin.transactionservice.entity.PaymentStatus;
 import org.profin.transactionservice.entity.Transaction;
 import org.profin.transactionservice.entity.TransactionType;
 import org.profin.transactionservice.repository.TransactionRepository;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -27,46 +28,65 @@ public class TransactionService {
     private final KafkaTemplate<String, Transaction> kafkaTemplate;
 
     //todo use dto or map from dto on controller level
-    public Mono<Transaction> saveTransaction(Transaction transaction) {
+    //saves new transaction into db and send to kafka
+       public Mono<Transaction> createNewTransaction(Transaction transaction) {
         log.debug("TransactionService: Saving transaction: {}", transaction);
-        return transactionRepository.save(transaction).doOnSuccess(
-                savedTransacation -> log.debug("TransactionService: Transaction saved: {}", savedTransacation)
-        ).doOnError(
-                throwable ->
-                        log.error("TransactionService: Error saving transaction: {}", throwable.getMessage())
 
-        );
+        return transactionRepository.save(transaction)
+                .flatMap(savedTransaction -> {
+                    // Преобразуем CompletableFuture в Mono
+                    return Mono.fromFuture(sendTransactionToKafka(savedTransaction, "transactions.pending"))
+                            .thenReturn(savedTransaction);
+                })
+                .doOnSuccess(savedTransaction ->
+                        log.debug("TransactionService: Transaction saved and sent to Kafka: {}",
+                                savedTransaction))
+                .doOnError(throwable ->
+                        log.error("TransactionService: Error processing transaction: {}",
+                                throwable.getMessage()));
     }
 
-    public void sendTransaction(Transaction transaction) {
-        kafkaTemplate.send("transactions.pending", transaction);
-        log.info("Transaction sent to Kafka: {}", transaction.getId());
+    public Mono<Transaction> updateTransaction(Transaction transaction) {
+        log.debug("TransactionService: Updating transaction: {}", transaction);
+
+        return transactionRepository.save(transaction)
+                .doOnSuccess(updatedTransaction ->
+                        log.debug("TransactionService: Transaction updated: {}",
+                                updatedTransaction))
+                .doOnError(throwable ->
+                        log.error("TransactionService: Error updating transaction: {}",
+                                throwable.getMessage()));
     }
-    public void processTransaction(Transaction transaction) {
-        // Using HashCode as key for Kafka message to ensure that the same transaction is not processed twice
-        String key = String.format("TRANS_%d_%s",
-                transaction.getId(),
-                transaction.getCreatedAt()
-        );
-        CompletableFuture<SendResult<String, Transaction>> future =
-                kafkaTemplate.send("transactions.pending", transaction);
-
-
-        future.whenComplete((result, ex) -> {
-            if (ex == null) {
-                log.info("Transaction sent to Kafka: {}", transaction.getId());
-                //todo update status and save to db
-            } else {
-                log.error("Error sending transaction to Kafka: {}", ex.getMessage());
-            }
-        });
+    //async send transaction to kafka
+    private CompletableFuture<SendResult<String, Transaction>> sendTransactionToKafka(Transaction transaction,String topic) {
+        return kafkaTemplate.send(topic, transaction)
+                .whenComplete((result, ex) -> {
+                    if (ex == null) {
+                        log.info("Transaction sent to Kafka: {} with offset: {}",
+                                transaction.getId(),
+                                result.getRecordMetadata().offset());
+                    } else {
+                        log.error("Unable to send transaction {} to Kafka: {}",
+                                transaction.getId(),
+                                ex.getMessage());
+                    }
+                });
     }
 
 
+    //kfka consumers
+    @KafkaListener(topics = "transactions.processed", groupId = "account-service")
+    public void listenForProcessedTransaction(Transaction transaction) {
+        log.info("TransactionService: Received processed transaction: {}", transaction);
 
-
-
-
+        updateTransaction(transaction)
+                .flatMap(updatedTransaction -> {
+                    // Преобразуем CompletableFuture в Mono
+                    return Mono.fromFuture(sendTransactionToKafka(updatedTransaction, "transactions.notifications"));
+                })
+                .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
+                        error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
+    }
     //dev mode
     public Transaction buildTransefTransaction() {
         return new Transaction().builder().userId(1L).
