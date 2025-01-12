@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransactionListener {
 
-    private final UserService userService;
+    private final TransactionService transactionService;
     private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
 
     @Autowired
-    public TransactionListener(UserService userService, KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
-        this.userService = userService;
+    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
+        this.transactionService = transactionService;
         this.kafkaTemplate = kafkaTemplate;
     }
 
@@ -23,10 +23,10 @@ public class TransactionListener {
     public void handleTransaction(TransactionDTO transaction) {
         try {
             // Валидация пользователя
-            userService.validateTransaction(transaction);
+            transactionService.processTransaction(transaction);
 
             // Устанавливаем флаг валидации
-            transaction.setValid(true);
+//            transaction.setValid(true);
 
             // Отправка результата обратно в Kafka (в топик validated-transactions)
             kafkaTemplate.send("validated-transactions", transaction);
@@ -36,7 +36,7 @@ public class TransactionListener {
 //            log.error("Validation failed for transaction {}: {}", transaction.getId(), ex.getMessage());
 
             // Устанавливаем флаг валидности в false
-            transaction.setValid(false);
+//            transaction.setValid(false);
 
             // Отправляем обратно информацию о том, что транзакция не прошла валидацию
             kafkaTemplate.send("validated-transactions", transaction);
@@ -46,7 +46,7 @@ public class TransactionListener {
 //            log.error("Error processing transaction {}: {}", transaction.getId(), ex.getMessage(), ex);
 
             // Устанавливаем флаг валидности в false для всех ошибок
-            transaction.setValid(false);
+//            transaction.setValid(false);
 
             // Отправляем обратно информацию о том, что произошла ошибка в процессе обработки
             kafkaTemplate.send("validated-transactions", transaction);
