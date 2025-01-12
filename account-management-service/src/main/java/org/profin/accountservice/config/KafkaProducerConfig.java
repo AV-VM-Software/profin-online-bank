@@ -1,9 +1,8 @@
-package org.profin.transactionservice.config;
+package org.profin.accountservice.config;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.profin.transactionservice.TransactionDTO;
-import org.profin.transactionservice.entity.Transaction;
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;

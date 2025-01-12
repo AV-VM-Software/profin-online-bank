@@ -1,6 +1,5 @@
 package org.profin.accountservice.service;
 
-import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.model.BankAccount;
 import org.profin.accountservice.model.User;
