@@ -9,12 +9,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class TransactionMapper {
 
     private final TransactionRepository transactionRepository;
-    private final TransactionService transactionService;
 
 
     public Mono<Transaction> mapFromDto(TransactionDTO transactionRequest) {
@@ -33,10 +34,10 @@ public class TransactionMapper {
 
                         return transactionRepository.save(existingTransaction);
                     })
-                    .switchIfEmpty(transactionService.createNewTransaction(transactionRequest));
+                    .switchIfEmpty(createNewTransaction(transactionRequest));
         } else {
             // Create new transaction
-            return transactionService.createNewTransaction(transactionRequest);
+            return createNewTransaction(transactionRequest);
         }
     }
 
@@ -51,5 +52,19 @@ public class TransactionMapper {
                 .paymentStatus(transaction.getPaymentStatus())
                 .amount(transaction.getAmount())
                 .build();
+    }
+    public Mono<Transaction> createNewTransaction(TransactionDTO dto) {
+        Transaction newTransaction = Transaction.builder()
+                .userId(dto.getUserId())
+                .recipientId(dto.getRecipientId())
+                .idSenderAccount(dto.getIdSenderAccount())
+                .idRecipientAccount(dto.getIdRecipientAccount())
+                .transactionType(dto.getTransactionType())
+                .paymentStatus(dto.getPaymentStatus())
+                .amount(dto.getAmount())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        return transactionRepository.save(newTransaction);
     }
 }

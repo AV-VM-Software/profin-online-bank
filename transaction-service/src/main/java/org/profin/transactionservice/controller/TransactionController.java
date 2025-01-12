@@ -29,23 +29,9 @@ public class TransactionController {
     public Mono<TransactionDTO> createNewTransaction(@Valid @RequestBody TransactionDTO transactionRequest) {
         return transactionMapper.mapFromDto(transactionRequest)
                 .flatMap(transactionService::createNewTransaction)
-                .flatMap(savedTransaction -> {
-                    // Convert to DTO
-                    TransactionDTO dto = transactionMapper.mapToTransactionDTO(savedTransaction);
-
-                    // Send to Kafka and convert to Mono
-                    return Mono.fromFuture(
-                            kafkaTemplate.send("transactions.pending", dto)
-                                    .handle((result, ex) -> {
-                                        if (ex != null) {
-                                            log.error("Failed to send to Kafka: {}", ex.getMessage());
-                                            throw new RuntimeException(ex);
-                                        }
-                                        log.info("Successfully sent to Kafka with offset: {}",
-                                                result.getRecordMetadata().offset());
-                                        return dto;
-                                    })
-                    );
+                .map(savedTransaction -> {
+                    log.info("Transaction saved and sent to kafka transactions.pending: {}", savedTransaction);
+                    return transactionMapper.mapToTransactionDTO(savedTransaction);
                 })
                 .doOnSuccess(dto -> log.info("Transaction processed successfully: {}", dto.getId()))
                 .doOnError(error -> log.error("Transaction processing failed: {}", error.getMessage()));

@@ -115,21 +115,6 @@ public class TransactionService {
 
 
 
-    public Mono<Transaction> createNewTransaction(TransactionDTO dto) {
-        Transaction newTransaction = Transaction.builder()
-                .userId(dto.getUserId())
-                .recipientId(dto.getRecipientId())
-                .idSenderAccount(dto.getIdSenderAccount())
-                .idRecipientAccount(dto.getIdRecipientAccount())
-                .transactionType(dto.getTransactionType())
-                .paymentStatus(dto.getPaymentStatus())
-                .amount(dto.getAmount())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        return transactionRepository.save(newTransaction);
-    }
-
     //dev mode
     public Transaction buildTransefTransaction() {
         return new Transaction().builder().userId(1L).
