@@ -1,9 +1,12 @@
 package org.profin.accountservice.controller;
 
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.dto.UserDTO;
 import org.profin.accountservice.dto.UserMapper;
 import org.profin.accountservice.model.User;
+import org.profin.accountservice.service.TransactionProducer;
 import org.profin.accountservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +23,13 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
 
+    private final TransactionProducer transactionProducer;
+
     @Autowired
-    public UserController(UserService userService, UserMapper userMapper) {
+    public UserController(UserService userService, UserMapper userMapper, TransactionProducer transactionProducer) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.transactionProducer = transactionProducer;
     }
 
     // Получение списка пользователей
@@ -79,7 +85,19 @@ public class UserController {
     }
 
 
+    @PostMapping("/postMessage")
+    public ResponseEntity<String> sendTransaction(@RequestBody TransactionDTO transaction) {
+        try {
+            // Отправляем транзакцию в Kafka через сервис
+            transactionProducer.sendTransaction(transaction);
 
+            // Возвращаем успешный ответ
+            return ResponseEntity.ok("Transaction sent successfully");
+        } catch (Exception e) {
+            // Логируем ошибку и возвращаем ошибку
+            return ResponseEntity.status(500).body("Failed to send transaction: " + e.getMessage());
+        }
+    }
 
 
 

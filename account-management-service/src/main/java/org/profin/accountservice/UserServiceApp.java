@@ -11,4 +11,12 @@ public class UserServiceApp
     {
         SpringApplication.run(UserServiceApp.class);
     }
+
+
+
+//    тут надо комманд лайн раннер
+
+
+
+
 }

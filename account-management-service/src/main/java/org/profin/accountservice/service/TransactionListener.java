@@ -1,5 +1,6 @@
 package org.profin.accountservice.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+
+@Slf4j
 @Service
 public class TransactionListener {
 
@@ -28,8 +31,12 @@ public class TransactionListener {
             // Устанавливаем флаг валидации
 //            transaction.setValid(true);
 
+
             // Отправка результата обратно в Kafka (в топик validated-transactions)
             kafkaTemplate.send("validated-transactions", transaction);
+
+            log.info("Validated transaction sent back to Kafka");
+
 
         } catch (ValidationException ex) {
             // Логируем ошибку валидации
@@ -41,6 +48,9 @@ public class TransactionListener {
             // Отправляем обратно информацию о том, что транзакция не прошла валидацию
             kafkaTemplate.send("validated-transactions", transaction);
 
+            log.info("Transaction is invalid!");
+
+
         } catch (Exception ex) {
             // Логируем любые другие непредвиденные ошибки
 //            log.error("Error processing transaction {}: {}", transaction.getId(), ex.getMessage(), ex);
@@ -50,6 +60,8 @@ public class TransactionListener {
 
             // Отправляем обратно информацию о том, что произошла ошибка в процессе обработки
             kafkaTemplate.send("validated-transactions", transaction);
+            log.info("Internal error has occurred...");
+
         }
     }
 }
