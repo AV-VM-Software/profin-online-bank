@@ -2,6 +2,8 @@ package org.profin.accountservice.service;
 
 import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
+import org.profin.accountservice.repository.BankAccountRepository;
+import org.profin.accountservice.repository.UserRepository;
 import org.profin.accountservice.validation.BalanceValidationHandler;
 import org.profin.accountservice.validation.TransactionAmountValidationHandler;
 import org.profin.accountservice.validation.UserExistenceValidationHandler;
@@ -15,10 +17,10 @@ public class TransactionService {
     private final ValidationHandler validationChain;
 
     @Autowired
-    public TransactionService(UserService userService) {
+    public TransactionService(UserRepository userRepository, BankAccountRepository bankAccountRepository) {
         // Формируем цепочку обработчиков
-        this.validationChain = new UserExistenceValidationHandler(userService);
-        ValidationHandler balanceHandler = new BalanceValidationHandler(userService);
+        this.validationChain = new UserExistenceValidationHandler(userRepository);
+        ValidationHandler balanceHandler = new BalanceValidationHandler(bankAccountRepository);
         ValidationHandler amountHandler = new TransactionAmountValidationHandler();
 
         // Настроим цепочку
@@ -34,5 +36,7 @@ public class TransactionService {
         // Например, сохранение транзакции в базе данных
         System.out.println("Transaction validated and processed: " + transaction);
     }
+
+
 }
 

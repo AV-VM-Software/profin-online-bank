@@ -1,7 +1,10 @@
 package org.profin.accountservice.dto;
 
 import org.profin.accountservice.model.User;
+import org.springframework.stereotype.Component;
 
+
+@Component
 public class UserMapper {
 
     public UserDTO toDTO(User user) {
