@@ -1,9 +1,9 @@
 package org.profin.accountservice.validation;
 
-import org.profin.accountservice.dto.TransactionDTO;
+
+import org.profin.accountservice.dto.request.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.repository.UserRepository;
-import org.profin.accountservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,11 +20,11 @@ public class UserExistenceValidationHandler extends ValidationHandler {
     }
 
     @Override
-    public void validate(TransactionDTO transaction) throws ValidationException {
+    public void validate(TransactionDTO transactionDTO) throws ValidationException {
         // Проверка существования пользователя с использованием репозитория
-        if (!userRepository.existsById(transaction.getUserId())) {
+        if (!userRepository.existsById(transactionDTO.getUserId())) {
             throw new ValidationException("User not found");
         }
-        super.validate(transaction); // Передаем дальше по цепочке
+        super.validate(transactionDTO); // Передаем дальше по цепочке
     }
 }

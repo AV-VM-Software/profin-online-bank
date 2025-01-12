@@ -70,7 +70,14 @@ docker start schema-registry
     --entity-name transactions.pending \
     --alter --add-config retention.ms=-1
 
+или 
+# Удаляем топик
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic transactions.pending
 
+# Создаем топик заново
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic transactions.pending --partitions 3 --replication-factor 1
+
+или admin api?
 ```
 
 
