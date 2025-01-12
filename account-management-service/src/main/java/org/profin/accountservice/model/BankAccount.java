@@ -6,31 +6,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "tb_user")
+@Table(name = "tb_account")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class BankAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String email;
+    @Column(name = "balance", nullable = false)
+    private BigDecimal balance;    // Сумма транзакции
 
-    @Column(nullable = false)
-    private String password;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BankAccount> bankAccounts;
 
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -38,6 +36,8 @@ public class User {
 
     @Column(name = "updated_at")
     private Date updatedAt;
+
+
 
     @PrePersist
     protected void onCreate() {
