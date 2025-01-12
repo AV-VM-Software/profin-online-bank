@@ -1,13 +1,8 @@
-package org.profin.accountservice.dto.request;
+package org.profin.accountservice.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
-import org.profin.accountservice.dto.PaymentStatus;
-import org.profin.accountservice.dto.TransactionType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 
 @Data

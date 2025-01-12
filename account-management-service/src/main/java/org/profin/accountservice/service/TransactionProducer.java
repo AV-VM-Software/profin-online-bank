@@ -2,7 +2,7 @@ package org.profin.accountservice.service;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.profin.accountservice.dto.request.TransactionDTO;
+import org.profin.accountservice.dto.TransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

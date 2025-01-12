@@ -1,7 +1,7 @@
 package org.profin.accountservice.validation;
 
 
-import org.profin.accountservice.dto.request.TransactionDTO;
+import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.exception.ValidationException;
 import org.profin.accountservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -33,6 +33,8 @@ public class TransactionService {
     //saves new transaction into db and send to kafka
     public Mono<Transaction> createNewTransaction(Transaction transaction) {
         log.debug("TransactionService: Saving transaction: {}", transaction);
+        transaction.setCreatedAt(LocalDateTime.now());
+        transaction.setPaymentStatus(PaymentStatus.PENDING);
 
         return transactionRepository.save(transaction)
                 .map(savedTransaction -> {

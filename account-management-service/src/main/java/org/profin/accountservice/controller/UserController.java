@@ -3,7 +3,7 @@ package org.profin.accountservice.controller;
 
 import org.profin.accountservice.dto.UserDTO;
 import org.profin.accountservice.dto.UserMapper;
-import org.profin.accountservice.dto.request.TransactionDTO;
+import org.profin.accountservice.dto.TransactionDTO;
 import org.profin.accountservice.model.User;
 import org.profin.accountservice.service.TransactionProducer;
 import org.profin.accountservice.service.UserService;
