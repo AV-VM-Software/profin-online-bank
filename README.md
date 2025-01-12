@@ -54,6 +54,16 @@ docker start schema-registry
 
 ```
 
+удалить всё сообщение в топике
+```docker
+/opt/kafka/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
+    --entity-type topics \
+    --entity-name transactions.pending \
+    --alter --add-config retention.ms=1
+
+```
+
+
 
 ## How to configure double push 2 orgins
 ```bash
