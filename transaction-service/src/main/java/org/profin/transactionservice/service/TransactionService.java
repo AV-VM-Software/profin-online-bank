@@ -111,18 +111,24 @@ public class TransactionService {
                         error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
     }
 
-//    public Transaction buildFromRequest(TransactionDTO transactionRequest) {
-//        return new Transaction().builder().userId(transactionRequest.userId()).
-//        recipientId(transactionRequest.recipientId()).
-//        amount(transactionRequest.amount()).
-//        idSenderAccount(transactionRequest.idSenderAccount()).
-//        idRecipientAccount(transactionRequest.idRecipientAccount()).
-//        transactionType(transactionRequest.transactionType()).
-//        paymentStatus(PaymentStatus.PENDING).
-//        createdAt(LocalDateTime.now()).
-//                build();
-//    }
-    public Transaction buildFromRequest(TransactionDTO)
+
+
+
+    public Mono<Transaction> createNewTransaction(TransactionDTO dto) {
+        Transaction newTransaction = Transaction.builder()
+                .userId(dto.getUserId())
+                .recipientId(dto.getRecipientId())
+                .idSenderAccount(dto.getIdSenderAccount())
+                .idRecipientAccount(dto.getIdRecipientAccount())
+                .transactionType(dto.getTransactionType())
+                .paymentStatus(dto.getPaymentStatus())
+                .amount(dto.getAmount())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        return transactionRepository.save(newTransaction);
+    }
+
     //dev mode
     public Transaction buildTransefTransaction() {
         return new Transaction().builder().userId(1L).
