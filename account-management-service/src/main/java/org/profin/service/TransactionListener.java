@@ -25,11 +25,11 @@ public class TransactionListener {
     //dev dev test
 //     !!!!! Received message:
 //     {"id":2,"userId":1,"recipientId":2,"idSenderAccount":1,"idRecipientAccount":2,"transactionType":"TRANSFER","paymentStatus":"PENDING","amount":100.0}
-    @KafkaListener(topics = "transactions.pending", groupId = "account-management-service-group")
-    public void handlePendingTransaction(String message) {
-        log.info("!!!!! Received message: {}", message);
-    }
-
+//    @KafkaListener(topics = "transactions.pending", groupId = "account-management-service-group")
+//    public void handlePendingTransaction(String message) {
+//        log.info("!!!!! Received message: {}", message);
+//    }
+//
 
 //    @KafkaListener(topics = "transactions.pending", groupId = "account-management-service-group")
 //    public void handleTransaction(TransactionDTO transaction) {
