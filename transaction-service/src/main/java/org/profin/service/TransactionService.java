@@ -100,18 +100,25 @@ public class TransactionService {
                 });
     }
 
-    //kfka consumers
-    @KafkaListener(topics = "transactions.processed", groupId = "account-service")
-    public void listenForProcessedTransaction(Transaction transaction) {
-        log.info("TransactionService: Received processed transaction: {}", transaction);
+//    kfka consumers
+    @KafkaListener(topics = "transactions.processed", groupId = "transaction-service")
+    public void listenForProcessedTransaction(TransactionDTO transactionDTO) {
+        log.info("TransactionService: Received processed transaction: {}", transactionDTO);
 
-        updateTransaction(transaction)
-                .flatMap(updatedTransaction -> {
-                    // Преобразуем CompletableFuture в Mono
-                    return Mono.fromFuture(sendTransactionToKafka(transactionMapper.mapToTransactionDTO(updatedTransaction), "transactions.notifications"));
+        transactionRepository.findById(transactionDTO.getId())
+                .flatMap(transaction -> {
+                    transaction.setPaymentStatus(transactionDTO.getPaymentStatus());
+                    return updateTransaction(transaction);
                 })
-                .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
-                        error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
+                .flatMap(updatedTransaction -> {
+                    TransactionDTO dto = transactionMapper.mapToTransactionDTO(updatedTransaction);
+                    return Mono.fromFuture(sendTransactionToKafka(dto, "transactions.notifications"));
+                })
+                .subscribe(
+                        result -> log.info("Transaction successfully processed and sent to notifications: {}", result),
+                        error -> log.error("Error processing transaction: {}", error.getMessage()),
+                        () -> log.info("Transaction processing completed")
+                );
     }
 
 
