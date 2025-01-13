@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProceededTransactionDTO {
     private Long id;
 

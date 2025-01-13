@@ -2,6 +2,7 @@ package org.profin.config;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.profin.dto.ProceededTransactionDTO;
 import org.profin.dto.TransactionDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,7 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
     @Bean
-    public ProducerFactory<String, TransactionDTO> producerFactory() {
+    public ProducerFactory<String, ProceededTransactionDTO> producerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -25,7 +26,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, TransactionDTO> kafkaTemplate() {
+    public KafkaTemplate<String, ProceededTransactionDTO> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

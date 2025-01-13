@@ -1,9 +1,10 @@
 package org.profin.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.profin.dto.PaymentStatus;
+import org.profin.dto.ProceededTransactionDTO;
 import org.profin.dto.TransactionDTO;
-import org.profin.exception.ValidationException;
+import org.profin.dto.TransactionType;
+import org.profin.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,12 +19,14 @@ import java.util.concurrent.CompletableFuture;
 public class TransactionListener {
 
     private final TransactionService transactionService;
-    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
+    private final KafkaTemplate<String, ProceededTransactionDTO> kafkaTemplate;
+    private final UserService userService;
 
     @Autowired
-    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, TransactionDTO> kafkaTemplate) {
+    public TransactionListener(TransactionService transactionService, KafkaTemplate<String, ProceededTransactionDTO> kafkaTemplate, UserService userService) {
         this.transactionService = transactionService;
         this.kafkaTemplate = kafkaTemplate;
+        this.userService = userService;
     }
 
 
@@ -90,9 +93,30 @@ public class TransactionListener {
     public void handlePendingTransaction(TransactionDTO transactionDTO) {
         try {
             TransactionDTO transactionProceed = transactionService.processTransaction(transactionDTO);
+            //кншн костыль, лучше бы сервис возвращал сразу нужный дто но лан
+            ProceededTransactionDTO proceededTransactionDTO = ProceededTransactionDTO.builder()
+                    .id(transactionProceed.getId())
+                    .amount(transactionProceed.getAmount())
+                    .idRecipientAccount(transactionProceed.getIdRecipientAccount())
+                    .idSenderAccount(transactionProceed.getIdSenderAccount())
+                    .paymentStatus(transactionProceed.getPaymentStatus())
+                    .transactionType(transactionProceed.getTransactionType())
+                    .build();
 
+            if(transactionProceed.getTransactionType().equals(TransactionType.TRANSFER)){
+                User user = userService.getUserById(transactionProceed.getUserId());
+                proceededTransactionDTO.setUserEmail(user.getEmail());
+
+                User recipient = userService.getUserById(transactionProceed.getRecipientId());
+                proceededTransactionDTO.setRecipientEmail(recipient.getEmail());
+            }
+            else {
+                User user = userService.getUserById(transactionProceed.getUserId());
+                proceededTransactionDTO.setUserEmail(user.getEmail());
+            }
+            log.info(proceededTransactionDTO.toString());
             log.info(transactionProceed.toString());
-            sendTransactionToKafka(transactionProceed, "transactions.processed");
+            sendTransactionToKafka(proceededTransactionDTO, "transactions.processed");
         } catch (Exception e){
             log.info(e.getMessage());
         }
@@ -100,7 +124,7 @@ public class TransactionListener {
 
 
     //todo code is duplicated in TransactionProducer and TransactionListener u sure u need diff classes?
-    public CompletableFuture<SendResult<String, TransactionDTO>> sendTransactionToKafka(TransactionDTO dto, String topic) {
+    public CompletableFuture<SendResult<String, ProceededTransactionDTO>> sendTransactionToKafka(ProceededTransactionDTO dto, String topic) {
         return kafkaTemplate.send(topic, dto)
                 .thenApply(result -> {
                     log.info("Transaction sent to Kafka: {} with offset: {}",

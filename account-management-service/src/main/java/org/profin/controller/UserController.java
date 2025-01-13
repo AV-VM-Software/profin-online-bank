@@ -5,7 +5,7 @@ import org.profin.dto.UserDTO;
 import org.profin.dto.UserMapper;
 import org.profin.dto.TransactionDTO;
 import org.profin.model.User;
-import org.profin.service.TransactionProducer;
+//import org.profin.service.TransactionProducer;
 import org.profin.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,13 +22,13 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    private final TransactionProducer transactionProducer;
+//    private final TransactionProducer transactionProducer;
 
     @Autowired
-    public UserController(UserService userService, UserMapper userMapper, TransactionProducer transactionProducer) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
-        this.transactionProducer = transactionProducer;
+//        this.transactionProducer = transactionProducer;
     }
 
     // Получение списка пользователей
@@ -87,18 +87,18 @@ public class UserController {
     /*dev function for testing
     *  usually it goes from transaction service
      */
-    @PostMapping("/postTransaction")
-    public ResponseEntity<String> postTransaction(@RequestBody TransactionDTO transactionDTO) {
-        try {
-            // Отправляем транзакцию в Kafka через сервис
-            transactionProducer.sendTransactionToKafka(transactionDTO, "transactions.pending");
-            // Возвращаем успешный ответ
-            return ResponseEntity.ok("Transaction sent successfully");
-        } catch (Exception e) {
-            // Логируем ошибку и возвращаем ошибку
-            return ResponseEntity.status(500).body("Failed to send transaction: " + e.getMessage());
-        }
-    }
+//    @PostMapping("/postTransaction")
+//    public ResponseEntity<String> postTransaction(@RequestBody TransactionDTO transactionDTO) {
+//        try {
+//            // Отправляем транзакцию в Kafka через сервис
+//            transactionProducer.sendTransactionToKafka(transactionDTO, "transactions.pending");
+//            // Возвращаем успешный ответ
+//            return ResponseEntity.ok("Transaction sent successfully");
+//        } catch (Exception e) {
+//            // Логируем ошибку и возвращаем ошибку
+//            return ResponseEntity.status(500).body("Failed to send transaction: " + e.getMessage());
+//        }
+//    }
 
 
 
