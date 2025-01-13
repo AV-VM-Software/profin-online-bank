@@ -84,12 +84,11 @@ public class UserController {
     }
 
 
-    @PostMapping("/postMessage")
-    public ResponseEntity<String> sendTransaction(@RequestBody TransactionDTO transactionDTO) {
+    @PostMapping("/postTransaction")
+    public ResponseEntity<String> postTransaction(@RequestBody TransactionDTO transactionDTO) {
         try {
             // Отправляем транзакцию в Kafka через сервис
-            transactionProducer.sendTransaction(transactionDTO);
-
+            transactionProducer.sendTransactionToKafka(transactionDTO, "transactions.pending");
             // Возвращаем успешный ответ
             return ResponseEntity.ok("Transaction sent successfully");
         } catch (Exception e) {
