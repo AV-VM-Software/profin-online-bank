@@ -1,6 +1,7 @@
 package org.profin.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.profin.dto.PaymentStatus;
 import org.profin.dto.TransactionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +9,12 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionListner {
 
+    private final EmailService emailService;
 
     //dev dev test
 //     !!!!! Received message:
@@ -24,6 +27,11 @@ public class TransactionListner {
 //
     @KafkaListener(topics = "transactions.processed", groupId = "notification-service-group")
     public void handleTransaction(TransactionDTO transaction) {
-
+        try {
+            emailService.sendTransactionReceipt("vozhov.artem1@gmail.com",transaction);
+    }catch (Exception e){
+        log.error("Failed to send email for transaction: {}", transaction.getId(), e);
+        throw new RuntimeException("Failed to send email", e);
+        }
     }
 }
