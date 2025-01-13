@@ -25,9 +25,11 @@ public class TransactionListner {
 //    }
 //
 //
-    @KafkaListener(topics = "transactions.processed", groupId = "notification-service-group")
+    @KafkaListener(topics = "transactions.notifications", groupId = "notification-service-group")
     public void handleTransaction(TransactionDTO transaction) {
+        log.info("Received transaction: {}", transaction);
         try {
+            log.info("Sending email for transaction: {}", transaction.getId());
             emailService.sendTransactionReceipt("vozhov.artem1@gmail.com",transaction);
     }catch (Exception e){
         log.error("Failed to send email for transaction: {}", transaction.getId(), e);

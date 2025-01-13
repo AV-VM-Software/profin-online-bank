@@ -84,6 +84,9 @@ public class UserController {
     }
 
 
+    /*dev function for testing
+    *  usually it goes from transaction service
+     */
     @PostMapping("/postTransaction")
     public ResponseEntity<String> postTransaction(@RequestBody TransactionDTO transactionDTO) {
         try {

@@ -90,6 +90,7 @@ public class TransactionListener {
     public void handlePendingTransaction(TransactionDTO transactionDTO) {
         try {
             TransactionDTO transactionProceed = transactionService.processTransaction(transactionDTO);
+
             log.info(transactionProceed.toString());
             sendTransactionToKafka(transactionProceed, "transactions.processed");
         } catch (Exception e){
@@ -97,6 +98,8 @@ public class TransactionListener {
         }
     }
 
+
+    //todo code is duplicated in TransactionProducer and TransactionListener u sure u need diff classes?
     public CompletableFuture<SendResult<String, TransactionDTO>> sendTransactionToKafka(TransactionDTO dto, String topic) {
         return kafkaTemplate.send(topic, dto)
                 .thenApply(result -> {
