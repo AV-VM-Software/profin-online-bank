@@ -25,6 +25,11 @@ public class UserExistenceValidationHandler extends ValidationHandler {
         if (!userRepository.existsById(transactionDTO.getUserId())) {
             throw new ValidationException("User not found");
         }
+
+        if (!userRepository.existsById(transactionDTO.getUserId())) {
+            throw new ValidationException("Reciepent not found");
+        }
+
         super.validate(transactionDTO); // Передаем дальше по цепочке
     }
 }
