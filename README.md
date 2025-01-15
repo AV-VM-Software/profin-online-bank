@@ -1,5 +1,7 @@
-Configure Apache Kafka
+Get Started
 ===========================
+
+###Configure Apache Kafka
 - start docker deamon
 - ```docker-compose up -d```
 - go to container term ```docker exec -it broker bash```
@@ -21,31 +23,108 @@ transactions.pending
 transactions.processed
 ```
 
- Used Patterns
+### Run Spring Boot Services
+make sure you have maven installed and kafka broker is running
+    
+* ```cd transaction-service/``` ```mvn spring-boot:run```
+* ```cd account-management-service/``` ```mvn spring-boot:run```
+- ```cd notification-service/```
+- ```mvn spring-boot:run -Dspring-boot.run.arguments="--jasypt.encryptor.password=your_encryption_key```
+- : This sets the Jasypt encryption key as a command-line argument for the application.
+
+
+## Configure Smtp 
+### Note : For testing purposes for now it is using my ecnrypted app password, skip this steps if you don't want to use your own email
+
+To enable email notifications using your Google account, follow these steps:
+
+### Step 1: Obtain a Google App Password
+
+1. **Enable 2-Step Verification**:
+    - Go to your Google Account settings.
+    - Navigate to "Security".
+    - Under "Signing in to Google", enable 2-Step Verification if it's not already enabled.
+
+2. **Generate an App Password**:
+    - After enabling 2-Step Verification, go back to the "Security" section.
+    - Under "Signing in to Google", click on "App passwords".
+    - Select "Mail" as the app and "Other" as the device, then enter a name (e.g., "MyApp SMTP").
+    - Click "Generate" to get your app password. Make sure to copy it, as you'll need it for the next steps.
+
+### Step 2: Encrypt your App Password
+Use Jasypt to encrypt your app password:
+```bash
+ java -cp ~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar org.jasypt.intf.cli.JasyptPBEStringEncryptionCLI input="your_app_password" password=your_encryption_key algorithm=PBEWithMD5AndDES
+```
+
+- Replace `your_app_password` with the app password you generated from Google.
+- Replace `your_encryption_key` with a secure key that you'll use to encrypt and decrypt the password.
+- When you start the notification service, pass the encryption key as a command-line argument.
+
+you will get something like this:
+``` 
+----ENVIRONMENT-----------------
+
+Runtime: Red Hat, Inc. OpenJDK 64-Bit Server VM 21.0.5+11 
+
+
+
+----ARGUMENTS-------------------
+
+input: aomz hrfw yxqp jozw
+password: your_encryption_key
+algorithm: PBEWithMD5AndDES
+
+
+
+----OUTPUT----------------------
+
+2fiWLcpEJU2YvBFBtSvEd/guPlDdVu87ETLZqpkZI64=
+
+```
+
+### Step 3: Configure the Notification Service
+- Open the `application.properties` file in the `notification-service/src/main/resources` directory.
+- Set the `spring.mail.username` property to your Gmail address.
+- Set the `spring.mail.password` property to the encrypted app password you generated.
+
+System Architecture
+------------------
+![Microservices Communication](./doc/deplyment_schema.png)
+*Microservices interaction and communication flow*
+
+How to test the application
 ===========================
-- Saga orchestration
-- Reactive programming
+
+Used Patterns
+===========================
+- Saga orchestration - Transaction Service
+- Reactive programming - Spring WebFlux in Transaction Service
 - Event driven architecture
 - Microservice architecture
-- Factory method
-- Singleton 
-- Observer Listener Publisher?
+- Factory method - consumerFactory in KafkaConfiguration
+- Singleton - Spring Boot ```@RestController @Repository @Service etc.``` are always singletons if not specified otherwise
+- Observer - Kafka Producer, Kafka Consumer, Database configuration
+- Builder - All DTOs via Lombok, mappers uses builder
+- Strategy - used in kafka configuration in oder to deserialize diff types of messages: 
+```
+  props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+  props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+ ```
+
+Also 
+===========================
 - Functional programming
-- Builder
-- Strategy
+- Dependency Injection - Spring Boot
 
 
    Dev Notes
 ===========================
-Не создавай новых
 ```
 docker start broker 
-docker start schema-registry
 ```
 
-## look for messages in topic
-
-
+## Look for messages in topic
 ```docker
 # Просмотр последних N сообщений
 /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
@@ -54,32 +133,13 @@ docker start schema-registry
 
 ```
 
-удалить всё сообщение в топике
+## Delete topic
 ```docker
-# Установить retention.ms в 1 секунду
-/opt/kafka/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
-    --entity-type topics \
-    --entity-name transactions.pending \
-    --alter --add-config retention.ms=1
-
-# Подождать несколько секунд
-
-# Вернуть значение retention в -1 (никогда не удалять)
-/opt/kafka/bin/kafka-configs.sh --bootstrap-server localhost:9092 \
-    --entity-type topics \
-    --entity-name transactions.pending \
-    --alter --add-config retention.ms=-1
-
-или 
-# Удаляем топик
 /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic transactions.pending
-
-# Создаем топик заново
-/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic transactions.pending --partitions 3 --replication-factor 1
-
-или admin api?
 ```
-
+```docker
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic transactions.pending --partitions 3 --replication-factor 1
+```
 
 
 ## How to configure double push 2 orgins
@@ -92,28 +152,11 @@ git remote -v
 ```bash
 Should return:
 ```
+should return:
+```
 > origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (fetch)
 origin  git@github.com:AV-VM-Software/profin-online-bank.git (push)
 origin  git@gitlab.fel.cvut.cz:manilvit/profin.git (push)
 ```
 
-Eureka Server НЕ обязателен при использовании Kafka
-Основные причины 1:
 
-Kafka сам по себе обеспечивает балансировку нагрузки через партиции
-Сервисы взаимодействуют через топики, а не через прямые HTTP вызовы
-Kafka имеет собственный механизм обнаружения брокеров и потребителей
-Когда нужен Eureka Server
-При использовании REST взаимодействий между сервисами 1:
-Для service discovery
-Для load balancing через Ribbon
-При использовании API Gateway (например, Zuul)
-При гибридной архитектуре:
-Часть сервисов общается через HTTP
-Часть через Kafka
-
-
-
-Transaction processing
-===========================
-- В итоге тразакция сохранятеся в баз

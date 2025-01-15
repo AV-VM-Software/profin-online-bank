@@ -5,6 +5,8 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
+
+
 @Data
 @Getter
 @Setter
@@ -12,6 +14,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @SuperBuilder
 public class TransactionDTO {
+
     private Long id;
 
     private Long userId;

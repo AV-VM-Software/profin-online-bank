@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+/**
+ * Service class responsible for sending email receipts for transactions.
+ * It uses Thymeleaf for template rendering and JavaMailSender for sending emails.
+ */
 @Service
 @Slf4j  // Добавьте эту аннотацию
 public class EmailService {
@@ -22,6 +26,15 @@ public class EmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
+
+    /**
+     * Sends an email containing transaction details to the specified recipient.
+     *
+     * @param to The email address to which the receipt should be sent.
+     * @param transaction The transaction details used to populate the email template.
+     *
+     * @throws RuntimeException if an error occurs while attempting to send the email.
+     */
     public void sendTransactionReceipt(String to, TransactionDTO transaction) {
         try {
             log.info("Starting to prepare email for transaction: {}", transaction.getId());
@@ -51,6 +64,12 @@ public class EmailService {
         }
     }
 
+    /**
+     * Determines the email subject line based on the transaction type.
+     *
+     * @param transaction The transaction from which the subject is derived.
+     * @return A String describing the email subject, tailored to the transaction type.
+     */
     private String getSubjectByTransactionType(TransactionDTO transaction) {
         return switch (transaction.getTransactionType()) {
             case DEPOSIT -> "Deposit Receipt - Transaction #" + transaction.getId();
