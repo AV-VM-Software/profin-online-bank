@@ -16,10 +16,19 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration class for Kafka consumers. It sets up consumer properties,
+ * creates a ConsumerFactory, and provides a KafkaListenerContainerFactory.
+ */
 @Configuration
 public class KafkaConsumerConfig {
 
 
+    /**
+     * Defines the basic configurations needed for the Kafka consumer.
+     *
+     * @return A Map containing the consumer configuration properties.
+     */
     @Bean
     public Map<String, Object> consumerConfig() {
         Map<String, Object> props = new HashMap<>();
@@ -33,11 +42,24 @@ public class KafkaConsumerConfig {
         return props;
     }
 
+    /**
+     * Creates a ConsumerFactory that will generate Kafka consumers based on
+     * the provided consumer configuration.
+     *
+     * @return A ConsumerFactory used by the Spring Kafka framework to create consumers.
+     */
     @Bean
     public ConsumerFactory<String,Object> consumerFactory(){
         return new DefaultKafkaConsumerFactory<>(consumerConfig());
     }
 
+    /**
+     * Creates a KafkaListenerContainerFactory for concurrent message listener containers
+     * that will consume messages from Kafka topics.
+     *
+     * @return A KafkaListenerContainerFactory used to configure the concurrency and
+     *         threading for message listeners.
+     */
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
