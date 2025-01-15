@@ -95,6 +95,8 @@ System Architecture
 
 How to test the application
 ===========================
+Import file "OMO_POSTMAN_COLLECTION" to your Postman. There are all endpoint controls there.
+
 
 Used Patterns
 ===========================
