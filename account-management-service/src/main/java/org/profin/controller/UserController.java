@@ -55,9 +55,17 @@ public class UserController {
     // Создание нового пользователя
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+        // Маппим DTO в Entity
         User user = userMapper.toEntity(userDTO);
+
+        // Создаем пользователя
         User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(userMapper.toDTO(createdUser), HttpStatus.CREATED);
+
+        // Маппим созданного пользователя обратно в DTO
+        UserDTO createdUserDTO = userMapper.toDTO(createdUser);
+
+        // Возвращаем успешный ответ с кодом 201
+        return new ResponseEntity<>(createdUserDTO, HttpStatus.CREATED);
     }
 
     // Обновление данных пользователя
