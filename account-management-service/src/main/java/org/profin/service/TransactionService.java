@@ -18,100 +18,143 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+/**
+ * Service class for processing financial transactions.
+ * This service handles different types of transactions such as deposits, withdrawals, and transfers.
+ * It includes validation and updates to the bank account balances accordingly.
+ */
 @Service
 @Slf4j
 public class TransactionService {
 
-    private final ValidationHandler validationChain;
+    private final ValidationHandler validationChain;  // Chain of validation handlers
+    private final BankAccountRepository bankAccountRepository;  // Repository for managing bank account data
 
-    private final BankAccountRepository bankAccountRepository;
-
+    /**
+     * Constructor that sets up the validation chain and repository.
+     * The validation chain is used to validate transactions before processing them.
+     *
+     * @param userRepository repository for accessing user data
+     * @param bankAccountRepository repository for accessing bank account data
+     */
     @Autowired
     public TransactionService(UserRepository userRepository, BankAccountRepository bankAccountRepository, BankAccountRepository bankAccountRepository1) {
-        // Формируем цепочку обработчиков
+        // Forming the validation chain for processing transactions
         this.validationChain = new UserExistenceValidationHandler(userRepository);
         this.bankAccountRepository = bankAccountRepository1;
+
+        // Setting up additional validation handlers for transaction processing
         ValidationHandler balanceHandler = new BalanceValidationHandler(bankAccountRepository);
         ValidationHandler amountHandler = new TransactionAmountValidationHandler();
 
-        // Настроим цепочку
+        // Connecting the validation handlers to form a chain of responsibility
         this.validationChain.setNextHandler(balanceHandler);
         balanceHandler.setNextHandler(amountHandler);
     }
 
+    /**
+     * Processes a financial transaction.
+     * This method validates the transaction data and processes it based on the type of transaction.
+     *
+     * @param transactionDTO the transaction data transfer object containing the transaction details
+     * @return the updated TransactionDTO after processing
+     * @throws Exception if any validation or processing step fails
+     */
     @Transactional
     public TransactionDTO processTransaction(TransactionDTO transactionDTO) throws Exception {
-        // Валидация данных транзакции
+        // Perform validation before processing the transaction
+        // If validation fails, an exception will be thrown
 
-
-        // В зависимости от типа транзакции вызываем соответствующий метод
+        // Process transaction based on its type (Deposit, Withdrawal, or Transfer)
         return switch (transactionDTO.getTransactionType()) {
             case DEPOSIT -> processDeposit(transactionDTO);
             case WITHDRAWAL -> processWithdrawal(transactionDTO);
             case TRANSFER -> processTransfer(transactionDTO);
-            default ->
-                    throw new ValidationException("Unsupported transaction type: " + transactionDTO.getTransactionType());
+            default -> throw new ValidationException("Unsupported transaction type: " + transactionDTO.getTransactionType());
         };
     }
 
-    // Метод для депозита (пополнение счета)
+    /**
+     * Handles the deposit transaction type.
+     * Adds funds to the recipient's bank account and updates the transaction status.
+     *
+     * @param transactionDTO the transaction data
+     * @return the updated TransactionDTO with the completed status
+     */
     private TransactionDTO processDeposit(TransactionDTO transactionDTO) {
+        // Retrieve recipient bank account
         BankAccount recipientAccount = bankAccountRepository.findById(transactionDTO.getIdRecipientAccount())
                 .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
 
+        // Add the deposit amount to the recipient's balance
         BigDecimal amount = transactionDTO.getAmount();
-
-        // Обновление баланса получателя
         recipientAccount.setBalance(recipientAccount.getBalance().add(amount));
 
-        // Сохранение изменений в базе данных
+        // Save the updated account information to the database
         bankAccountRepository.save(recipientAccount);
 
-        // Обновление статуса транзакции
+        // Update the transaction status to "COMPLETED"
         transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
 
         log.info("Deposit completed successfully: " + transactionDTO);
         return transactionDTO;
     }
 
-    // Метод для снятия средств
+    /**
+     * Handles the withdrawal transaction type.
+     * Deducts funds from the sender's account if there are sufficient funds and updates the transaction status.
+     *
+     * @param transactionDTO the transaction data
+     * @return the updated TransactionDTO with the payment status
+     */
     private TransactionDTO processWithdrawal(TransactionDTO transactionDTO) {
+        // Retrieve sender bank account
         BankAccount senderAccount = bankAccountRepository.findById(transactionDTO.getIdSenderAccount())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
 
         BigDecimal amount = transactionDTO.getAmount();
 
-        // Проверка баланса отправителя
+        // Check if sender has sufficient funds for the withdrawal
         if (senderAccount.getBalance().compareTo(amount) < 0) {
+            // Insufficient funds, set payment status to FAILED
             transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
             log.info("Insufficient funds for withdrawal: " + transactionDTO);
             return transactionDTO;
         }
 
-        // Обновление баланса отправителя
+        // Deduct the withdrawal amount from the sender's account
         senderAccount.setBalance(senderAccount.getBalance().subtract(amount));
 
-        // Сохранение изменений в базе данных
+        // Save the updated sender account information to the database
         bankAccountRepository.save(senderAccount);
 
-        // Обновление статуса транзакции
+        // Update the transaction status to "COMPLETED"
         transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
 
         log.info("Withdrawal completed successfully: " + transactionDTO);
         return transactionDTO;
     }
 
-    // Метод для перевода средств между счетами
+    /**
+     * Handles the transfer transaction type.
+     * Transfers funds between the sender's and recipient's accounts, ensuring sufficient funds are available.
+     *
+     * @param transactionDTO the transaction data
+     * @return the updated TransactionDTO with the completed status or failed if validation fails
+     */
     private TransactionDTO processTransfer(TransactionDTO transactionDTO) {
 
         try {
+            // Validate the transaction using the validation chain
             validationChain.validate(transactionDTO);
         } catch (ValidationException e) {
+            // If validation fails, set payment status to FAILED
             transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
             log.info("Transaction failed: " + e.getMessage());
             return transactionDTO;
         }
 
+        // Retrieve sender and recipient bank accounts
         BankAccount senderAccount = bankAccountRepository.findById(transactionDTO.getIdSenderAccount())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
         BankAccount recipientAccount = bankAccountRepository.findById(transactionDTO.getIdRecipientAccount())
@@ -119,22 +162,23 @@ public class TransactionService {
 
         BigDecimal amount = transactionDTO.getAmount();
 
-        // Проверка баланса отправителя
+        // Check if sender has sufficient funds for the transfer
         if (senderAccount.getBalance().compareTo(amount) < 0) {
+            // Insufficient funds, set payment status to FAILED
             transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
             log.info("Insufficient funds for transfer: " + transactionDTO);
             return transactionDTO;
         }
 
-        // Обновление баланса отправителя и получателя
+        // Deduct the amount from the sender's account and add to the recipient's account
         senderAccount.setBalance(senderAccount.getBalance().subtract(amount));
         recipientAccount.setBalance(recipientAccount.getBalance().add(amount));
 
-        // Сохранение изменений в базе данных
-        bankAccountRepository.save(senderAccount); // Обновляет баланс отправителя
-        bankAccountRepository.save(recipientAccount); // Обновляет баланс получателя
+        // Save the updated account information for both sender and recipient
+        bankAccountRepository.save(senderAccount);
+        bankAccountRepository.save(recipientAccount);
 
-        // Обновление статуса транзакции
+        // Update the transaction status to "COMPLETED"
         transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
 
         log.info("Transfer completed successfully: " + transactionDTO);
