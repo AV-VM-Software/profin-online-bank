@@ -88,6 +88,11 @@ algorithm: PBEWithMD5AndDES
 - Set the `spring.mail.username` property to your Gmail address.
 - Set the `spring.mail.password` property to the encrypted app password you generated.
 
+System Architecture
+------------------
+![Microservices Communication](./doc/deplyment_schema.png)
+*Microservices interaction and communication flow*
+
 
 Used Patterns
 ===========================
