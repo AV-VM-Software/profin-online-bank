@@ -3,6 +3,7 @@ package org.profin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.profin.dto.ProceededTransactionDTO;
 import org.profin.dto.TransactionDTO;
 import org.profin.entity.PaymentStatus;
 import org.profin.entity.Transaction;
@@ -18,7 +19,11 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
-
+/**
+ * Service class encapsulating business logic for handling transactions.
+ * In addition to saving and updating transactions, it broadcasts them
+ * to Kafka and listens for processed transactions from Kafka.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,13 @@ public class TransactionService {
     private final TransactionMapper transactionMapper;
     private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
 
-    //todo use dto or map from dto on controller level
-    //saves new transaction into db and send to kafka
+    /**
+     * Saves a new Transaction to the database with a default payment status of PENDING,
+     * then sends it to the appropriate Kafka topic.
+     *
+     * @param transaction the Transaction entity to be saved and sent
+     * @return a Mono of Transaction representing the saved entity
+     */
     public Mono<Transaction> createNewTransaction(Transaction transaction) {
         log.debug("TransactionService: Saving transaction: {}", transaction);
         transaction.setCreatedAt(LocalDateTime.now());
@@ -74,6 +84,13 @@ public class TransactionService {
                                 throwable.getMessage()));
     }
 
+
+    /**
+     * Persists updates to an existing Transaction in the database.
+     *
+     * @param transaction the Transaction entity to update
+     * @return a Mono of Transaction reflecting the updated entity
+     */
     public Mono<Transaction> updateTransaction(Transaction transaction) {
         log.debug("TransactionService: Updating transaction: {}", transaction);
 
@@ -85,7 +102,14 @@ public class TransactionService {
                         log.error("TransactionService: Error updating transaction: {}",
                                 throwable.getMessage()));
     }
-    //async send transaction to kafka
+    /**
+     * Asynchronously sends a TransactionDTO to a specified Kafka topic and
+     * returns a CompletableFuture for handling the result.
+     *
+     * @param dto   the transaction data transfer object to send
+     * @param topic the target Kafka topic
+     * @return a CompletableFuture containing sending results
+     */
     private CompletableFuture<SendResult<String, TransactionDTO>> sendTransactionToKafka(TransactionDTO dto, String topic) {
         return kafkaTemplate.send(topic, dto)
                 .thenApply(result -> {
@@ -100,24 +124,53 @@ public class TransactionService {
                 });
     }
 
-    //kfka consumers
-    @KafkaListener(topics = "transactions.processed", groupId = "account-service")
-    public void listenForProcessedTransaction(Transaction transaction) {
-        log.info("TransactionService: Received processed transaction: {}", transaction);
+    /**
+     * Kafka listener for "transactions.processed" messages. Updates the corresponding
+     * transaction in the database and then forwards a notification to another Kafka topic,
+     * such as "transactions.notifications".
+     *
+     * @param proceededTransactionDTO the fully processed transaction DTO received from Kafka
+     */
+@KafkaListener(topics = "transactions.processed", groupId = "transaction-service")
+public void listenForProcessedTransaction(ProceededTransactionDTO proceededTransactionDTO) {
+    log.info("TransactionService: Received processed transaction: {}", proceededTransactionDTO);
 
-        updateTransaction(transaction)
-                .flatMap(updatedTransaction -> {
-                    // Преобразуем CompletableFuture в Mono
-                    return Mono.fromFuture(sendTransactionToKafka(transactionMapper.mapToTransactionDTO(updatedTransaction), "transactions.notifications"));
-                })
-                .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
-                        error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
-    }
+    transactionRepository.findById(proceededTransactionDTO.getId())
+            .flatMap(transaction -> {
+                transaction.setPaymentStatus(proceededTransactionDTO.getPaymentStatus());
+                return updateTransaction(transaction);
+            })
+            .flatMap(updatedTransaction -> {
+                ProceededTransactionDTO dto = ProceededTransactionDTO.builder()
+                        .id(updatedTransaction.getId())
+                        .userId(updatedTransaction.getUserId())
+                        .recipientId(updatedTransaction.getRecipientId())
+                        .amount(updatedTransaction.getAmount())
+                        .idRecipientAccount(updatedTransaction.getIdRecipientAccount())
+                        .idSenderAccount(updatedTransaction.getIdSenderAccount())
+                        .paymentStatus(updatedTransaction.getPaymentStatus())
+                        .transactionType(updatedTransaction.getTransactionType())
+                        .userEmail(proceededTransactionDTO.getUserEmail())
+                        .recipientEmail(proceededTransactionDTO.getRecipientEmail())
+                        .build();
+                return Mono.fromFuture(sendTransactionToKafka(dto, "transactions.notifications"));
+            })
+            .subscribe(
+                    result -> log.info("Transaction successfully processed and sent to notifications: {}", result),
+                    error -> log.error("Error processing transaction: {}", error.getMessage()),
+                    () -> log.info("Transaction processing completed")
+            );
+}
 
 
 
 
-    //dev mode
+    /**
+     * Development helper method for building a basic transaction object
+     * withTRANSFER type and PENDING status.
+     *
+     * @return a new Transaction pre-populated with test data
+     */
     public Transaction buildTransefTransaction() {
         return new Transaction().builder().userId(1L).
         recipientId(2L).

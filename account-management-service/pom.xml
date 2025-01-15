@@ -70,12 +70,6 @@
 
 
 
-        <!-- Основная зависимость для работы с Kafka -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
         <!-- Зависимость для тестирования Kafka -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
