@@ -5,6 +5,7 @@ import org.profin.model.User;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,16 @@ public class UserMapper {
         user.setId(userDTO.getId());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
+
+        // Преобразование List<> в List<BankAccount>
+        List<BankAccount> bankAccounts = new ArrayList<>();
+        for (BigDecimal balance : userDTO.getBankAccountBalances()) {
+            BankAccount account = new BankAccount();
+            account.setBalance(balance);
+            account.setUser(user);
+            bankAccounts.add(account);
+        }
+        user.setBankAccounts(bankAccounts);
 
         return user;
     }
