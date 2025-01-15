@@ -60,6 +60,16 @@ public class UserMapper {
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
 
+        // Преобразование List<> в List<BankAccount>
+        List<BankAccount> bankAccounts = new ArrayList<>();
+        for (BigDecimal balance : userDTO.getBankAccountBalances()) {
+            BankAccount account = new BankAccount();
+            account.setBalance(balance);
+            account.setUser(user);
+            bankAccounts.add(account);
+        }
+        user.setBankAccounts(bankAccounts);
+
         return user;
     }
 }

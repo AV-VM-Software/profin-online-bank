@@ -36,6 +36,8 @@ public class BankAccount {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    public BankAccount(BigDecimal balance) {
+    }
 
 
     @PrePersist
