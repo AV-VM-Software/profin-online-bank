@@ -12,6 +12,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ProceededTransactionDTO extends TransactionDTO {
     private String userEmail;
-    //might be null
     private String recipientEmail;
 }

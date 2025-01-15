@@ -12,6 +12,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST controller that manages incoming HTTP requests for transaction-related
+ * operations. It provides endpoints to create new transactions, check Kafka
+ * connectivity, and save transactions in development scenarios.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/transactions")
@@ -23,7 +28,13 @@ public class TransactionController {
     private final TransactionMapper transactionMapper;
     private final TransactionRepository transactionRepository;
 
-
+    /**
+     * Endpoint to create a new transaction by mapping a TransactionDTO to a Transaction
+     * entity, saving it, and then returning the saved TransactionDTO.
+     *
+     * @param transactionRequest the transaction model received from the request body
+     * @return a Mono of TransactionDTO representing the saved transaction
+     */
     @PostMapping("/createNewTransaction")
     public Mono<TransactionDTO> createNewTransaction(@Valid @RequestBody TransactionDTO transactionRequest) {
         return transactionMapper.mapFromDto(transactionRequest)
@@ -37,7 +48,10 @@ public class TransactionController {
     }
 
 
-
+    /**
+     * Endpoint to verify Kafka connectivity by creating and sending a transaction
+     * to a Kafka topic. Logs success or failure accordingly.
+     */
     @PostMapping("/checkKafkaConnection")
     public void checkKafkaConnection() {
         try {
@@ -69,6 +83,11 @@ public class TransactionController {
     }
 
     //dev
+    /**
+     * Development endpoint to create and save a sample transaction directly.
+     *
+     * @return a Mono of Transaction regarding the newly created transaction
+     */
     @PostMapping("/saveTransaction")
     public Mono<Transaction> saveTransaction() {
         return transactionService.createNewTransaction(transactionService.buildTransefTransaction());
