@@ -93,19 +93,29 @@ System Architecture
 ![Microservices Communication](./doc/deplyment_schema.png)
 *Microservices interaction and communication flow*
 
+How to test the application
+===========================
 
 Used Patterns
 ===========================
-- Saga orchestration
-- Reactive programming
+- Saga orchestration - Transaction Service
+- Reactive programming - Spring WebFlux in Transaction Service
 - Event driven architecture
 - Microservice architecture
-- Factory method
-- Singleton 
-- Observer Listener Publisher?
+- Factory method - consumerFactory in KafkaConfiguration
+- Singleton - Spring Boot ```@RestController @Repository @Service etc.``` are always singletons if not specified otherwise
+- Observer - Kafka Producer, Kafka Consumer, Database configuration
+- Builder - All DTOs via Lombok, mappers uses builder
+- Strategy - used in kafka configuration in oder to deserialize diff types of messages: 
+```
+  props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+  props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+ ```
+
+Also 
+===========================
 - Functional programming
-- Builder
-- Strategy
+- Dependency Injection - Spring Boot
 
 
    Dev Notes
