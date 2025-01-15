@@ -1,6 +1,7 @@
 package org.profin.dto;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.profin.entity.PaymentStatus;
 import org.profin.entity.TransactionType;
 
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class TransactionDTO {
     private Long id;
 

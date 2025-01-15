@@ -3,6 +3,7 @@ package org.profin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.profin.dto.ProceededTransactionDTO;
 import org.profin.dto.TransactionDTO;
 import org.profin.entity.PaymentStatus;
 import org.profin.entity.Transaction;
@@ -100,19 +101,37 @@ public class TransactionService {
                 });
     }
 
-    //kfka consumers
-    @KafkaListener(topics = "transactions.processed", groupId = "account-service")
-    public void listenForProcessedTransaction(Transaction transaction) {
-        log.info("TransactionService: Received processed transaction: {}", transaction);
+//    kfka consumers
+@KafkaListener(topics = "transactions.processed", groupId = "transaction-service")
+public void listenForProcessedTransaction(ProceededTransactionDTO proceededTransactionDTO) {
+    log.info("TransactionService: Received processed transaction: {}", proceededTransactionDTO);
 
-        updateTransaction(transaction)
-                .flatMap(updatedTransaction -> {
-                    // Преобразуем CompletableFuture в Mono
-                    return Mono.fromFuture(sendTransactionToKafka(transactionMapper.mapToTransactionDTO(updatedTransaction), "transactions.notifications"));
-                })
-                .subscribe(result -> log.info("Transaction sent to Kafka: {}", result),
-                        error -> log.error("Error sending transaction to Kafka: {}", error.getMessage()));
-    }
+    transactionRepository.findById(proceededTransactionDTO.getId())
+            .flatMap(transaction -> {
+                transaction.setPaymentStatus(proceededTransactionDTO.getPaymentStatus());
+                return updateTransaction(transaction);
+            })
+            .flatMap(updatedTransaction -> {
+                ProceededTransactionDTO dto = ProceededTransactionDTO.builder()
+                        .id(updatedTransaction.getId())
+                        .userId(updatedTransaction.getUserId())
+                        .recipientId(updatedTransaction.getRecipientId())
+                        .amount(updatedTransaction.getAmount())
+                        .idRecipientAccount(updatedTransaction.getIdRecipientAccount())
+                        .idSenderAccount(updatedTransaction.getIdSenderAccount())
+                        .paymentStatus(updatedTransaction.getPaymentStatus())
+                        .transactionType(updatedTransaction.getTransactionType())
+                        .userEmail(proceededTransactionDTO.getUserEmail())
+                        .recipientEmail(proceededTransactionDTO.getRecipientEmail())
+                        .build();
+                return Mono.fromFuture(sendTransactionToKafka(dto, "transactions.notifications"));
+            })
+            .subscribe(
+                    result -> log.info("Transaction successfully processed and sent to notifications: {}", result),
+                    error -> log.error("Error processing transaction: {}", error.getMessage()),
+                    () -> log.info("Transaction processing completed")
+            );
+}
 
 
 
