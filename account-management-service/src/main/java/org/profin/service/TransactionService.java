@@ -1,5 +1,6 @@
 package org.profin.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.profin.dto.PaymentStatus;
 import org.profin.dto.TransactionType;
 import org.profin.dto.TransactionDTO;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 @Service
+@Slf4j
 public class TransactionService {
 
     private final ValidationHandler validationChain;
@@ -38,16 +40,78 @@ public class TransactionService {
     }
 
     @Transactional
-    public void processTransaction(TransactionDTO transactionDTO) throws ValidationException {
+    public TransactionDTO processTransaction(TransactionDTO transactionDTO) throws Exception {
         // Валидация данных транзакции
-        validationChain.validate(transactionDTO);
 
-        // Проверка, что это перевод (Transfer)
-        if (transactionDTO.getTransactionType() != TransactionType.TRANSFER) {
-            throw new ValidationException("Unsupported transaction type: " + transactionDTO.getTransactionType());
+
+        // В зависимости от типа транзакции вызываем соответствующий метод
+        return switch (transactionDTO.getTransactionType()) {
+            case DEPOSIT -> processDeposit(transactionDTO);
+            case WITHDRAWAL -> processWithdrawal(transactionDTO);
+            case TRANSFER -> processTransfer(transactionDTO);
+            default ->
+                    throw new ValidationException("Unsupported transaction type: " + transactionDTO.getTransactionType());
+        };
+    }
+
+    // Метод для депозита (пополнение счета)
+    private TransactionDTO processDeposit(TransactionDTO transactionDTO) {
+        BankAccount recipientAccount = bankAccountRepository.findById(transactionDTO.getIdRecipientAccount())
+                .orElseThrow(() -> new IllegalArgumentException("Recipient account not found"));
+
+        BigDecimal amount = transactionDTO.getAmount();
+
+        // Обновление баланса получателя
+        recipientAccount.setBalance(recipientAccount.getBalance().add(amount));
+
+        // Сохранение изменений в базе данных
+        bankAccountRepository.save(recipientAccount);
+
+        // Обновление статуса транзакции
+        transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
+
+        log.info("Deposit completed successfully: " + transactionDTO);
+        return transactionDTO;
+    }
+
+    // Метод для снятия средств
+    private TransactionDTO processWithdrawal(TransactionDTO transactionDTO) {
+        BankAccount senderAccount = bankAccountRepository.findById(transactionDTO.getIdSenderAccount())
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
+
+        BigDecimal amount = transactionDTO.getAmount();
+
+        // Проверка баланса отправителя
+        if (senderAccount.getBalance().compareTo(amount) < 0) {
+            transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
+            log.info("Insufficient funds for withdrawal: " + transactionDTO);
+            return transactionDTO;
         }
 
-        // Получение счетов из базы данных
+        // Обновление баланса отправителя
+        senderAccount.setBalance(senderAccount.getBalance().subtract(amount));
+
+        // Сохранение изменений в базе данных
+        bankAccountRepository.save(senderAccount);
+
+        // Обновление статуса транзакции
+        transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
+
+        log.info("Withdrawal completed successfully: " + transactionDTO);
+        return transactionDTO;
+    }
+
+    // Метод для перевода средств между счетами
+    private TransactionDTO processTransfer(TransactionDTO transactionDTO) {
+
+        try {
+            validationChain.validate(transactionDTO);
+        } catch (ValidationException e) {
+            transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
+            log.info("Transaction failed: " + e.getMessage());
+            return transactionDTO;
+        }
+
         BankAccount senderAccount = bankAccountRepository.findById(transactionDTO.getIdSenderAccount())
                 .orElseThrow(() -> new IllegalArgumentException("Sender account not found"));
         BankAccount recipientAccount = bankAccountRepository.findById(transactionDTO.getIdRecipientAccount())
@@ -57,7 +121,9 @@ public class TransactionService {
 
         // Проверка баланса отправителя
         if (senderAccount.getBalance().compareTo(amount) < 0) {
-            throw new IllegalStateException("Insufficient funds on sender's account");
+            transactionDTO.setPaymentStatus(PaymentStatus.FAILED);
+            log.info("Insufficient funds for transfer: " + transactionDTO);
+            return transactionDTO;
         }
 
         // Обновление баланса отправителя и получателя
@@ -71,7 +137,8 @@ public class TransactionService {
         // Обновление статуса транзакции
         transactionDTO.setPaymentStatus(PaymentStatus.COMPLETED);
 
-        System.out.println("Transaction completed successfully: " + transactionDTO);
+        log.info("Transfer completed successfully: " + transactionDTO);
+        return transactionDTO;
     }
 
 }
