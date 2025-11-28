@@ -108,7 +108,8 @@ Used Patterns
 - Singleton - Spring Boot ```@RestController @Repository @Service etc.``` are always singletons if not specified otherwise
 - Observer - Kafka Producer, Kafka Consumer, Database configuration
 - Builder - All DTOs via Lombok, mappers uses builder
-- Strategy - used in kafka configuration in oder to deserialize diff types of messages: 
+- Strategy - used in kafka configuration in oder to deserialize diff types of messages:
+- Chain of Responsibility
 ```
   props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
   props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
