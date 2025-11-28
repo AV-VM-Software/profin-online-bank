@@ -110,6 +110,7 @@ Used Patterns
 - Builder - All DTOs via Lombok, mappers uses builder
 - Strategy - used in kafka configuration in oder to deserialize diff types of messages:
 - Chain of Responsibility
+- State Machine
 ```
   props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
   props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
